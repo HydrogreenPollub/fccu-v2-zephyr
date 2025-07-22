@@ -1,10 +1,16 @@
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/gpio.h>
 #include <stdio.h> // Include for printk
+#include "can.h"
+#include <zephyr/device.h>
+#include <zephyr/drivers/can.h>
+
+#include "../../zephyr/include/zephyr/devicetree.h"
 
 #define SLEEP_TIME_MS 1000
 
-static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(DT_ALIAS(led_0), gpios);
+const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(DT_ALIAS(led_0), gpios);
+const struct device *const can_dev = DEVICE_DT_GET(DT_ALIAS(can));
 
 
 int led_initialize() {
