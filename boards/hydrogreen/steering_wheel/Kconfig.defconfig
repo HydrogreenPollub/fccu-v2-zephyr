@@ -1,7 +1,0 @@
-if BOARD_STEERING_WHEEL
-
-config SPI_STM32_INTERRUPT
-	default y
-	depends on SPI
-
-endif # BOARD_STEERING_WHEEL
