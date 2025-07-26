@@ -20,7 +20,7 @@ int can_send_(const struct device *can_dev, uint8_t id, uint8_t *data, uint8_t d
         .id = id,
         .dlc = data_len
 };
-    memset(&frame.data[0], data, data_len);
+    memset(&frame.data[0], (int)data, data_len);
 
     return can_send(can_dev, &frame, K_FOREVER, can_tx_callback, "Sender 1");
 }
@@ -29,12 +29,11 @@ int can_send_(const struct device *can_dev, uint8_t id, uint8_t *data, uint8_t d
 
 void can_rx_callback(const struct device *dev, struct can_frame *frame, void *user_data)
 {
-
+    char *receiver = (char *)user_data;
+    printf("Odebrano:%s; %u\n", receiver, frame->data[0]);
 }
 
-
-
-int can_init(const struct device *can_dev, uint16_t baudrate)
+int can_init(const struct device *can_dev, uint32_t baudrate)
 {
     struct can_timing timing;
     int ret, filter_id;
@@ -44,7 +43,7 @@ int can_init(const struct device *can_dev, uint16_t baudrate)
         .mask = CAN_STD_ID_MASK
     };
 
-    filter_id = can_add_rx_filter(can_dev, can_rx_callback, NULL, &my_filter);
+    filter_id = can_add_rx_filter(can_dev, can_rx_callback, "message", &my_filter);
     if (filter_id < 0) {
         LOG_ERR("Unable to add rx filter [%d]", filter_id);
     }
@@ -66,4 +65,6 @@ int can_init(const struct device *can_dev, uint16_t baudrate)
     if (ret != 0) {
         LOG_ERR("Failed to start CAN controller");
     }
+    printf("can_ok\n");
+    return ret;
 }

@@ -4,4 +4,3 @@ board:
   vendor: hydrogreen
   socs:
     - name: esp32s3
-

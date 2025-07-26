@@ -15,10 +15,14 @@ project(app LANGUAGES C)
 
 target_sources(app PRIVATE
         src/main.c
+        src/fccu_v2.c
         peripherals/can.c
+        peripherals/gpio.c
+        peripherals/adc.c
 )
 
 target_include_directories(app PRIVATE
         peripherals
         lib-can-definitions
+        src
 )

@@ -17,6 +17,10 @@
 		uart-0 = &uart0;
 		sw0 = &button0;
 		can = &twai;
+		fan-pin = &fan0;
+		main-valve-pin = &main_valve0;
+		purge-valve-pin = &purge_valve0;
+		adc-1 = &adc1;
 	};
 
 	chosen {
@@ -26,6 +30,7 @@
 		zephyr,flash = &flash0;
 		zephyr,code-partition = &slot0_partition;
 		zephyr,bt-hci = &esp32_bt_hci;
+		zephyr,canbus = &twai;
 	};
 
 	buttons {
@@ -43,10 +48,36 @@
 			gpios = <&gpio0 3 GPIO_ACTIVE_HIGH>;
 		};
 	};
+	fan_on{
+		compatible = "gpio-leds";
+		fan0:fan_0{
+			label = "fan on pin";
+			gpios = <&gpio0 38 GPIO_ACTIVE_HIGH>;
+		};
+	};
+	main_valve_on{
+		compatible = "gpio-leds";
+		main_valve0:main_valve_0{
+			label = "main valve on pin";
+			gpios = <&gpio0 46 GPIO_ACTIVE_HIGH>;
+		};
+	};
+
+	purge_valve_on{
+		compatible = "gpio-leds";
+		purge_valve0:purge_valve_0{
+			label = "purge valve on pin";
+			gpios = <&gpio0 45 GPIO_ACTIVE_HIGH>;
+		};
+	};
+
+	zephyr,user {
+		io-channels = <&adc1 6>;
+	};
 };
 
 &usb_serial {
-	status = "disabled";
+	status = "okay";
 };
 
 &uart0 {
@@ -68,6 +99,49 @@
 	clock-frequency = <I2C_BITRATE_STANDARD>;
 	pinctrl-0 = <&i2c0_default>;
 	pinctrl-names = "default";
+	status = "okay";
+
+	ads1115:ads1015@48 {
+		compatible = "ti,ads1015";
+		reg = <0x48>;
+		label = "ADS1015";
+		#io-channel-cells = <1>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		status = "okay";
+
+		channel0: adc@0 {
+			reg = <0>;
+			zephyr,gain = "ADC_GAIN_1";
+			zephyr,reference = "ADC_REF_VDD_1";
+			zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+			zephyr,resolution = <12>;
+		};
+
+		channel1: adc@1 {
+			reg = <1>;
+			zephyr,gain = "ADC_GAIN_1";
+			zephyr,reference = "ADC_REF_VDD_1";
+			zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+			zephyr,resolution = <12>;
+		};
+
+		channel2: adc@2 {
+			reg = <2>;
+			zephyr,gain = "ADC_GAIN_1";
+			zephyr,reference = "ADC_REF_VDD_1";
+			zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+			zephyr,resolution = <12>;
+		};
+
+		channel3: adc@3 {
+			reg = <3>;
+			zephyr,gain = "ADC_GAIN_1";
+			zephyr,reference = "ADC_REF_VDD_1";
+			zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+			zephyr,resolution = <12>;
+		};
+	};
 };
 
 &i2c1 {
@@ -93,14 +167,6 @@
 	#size-cells = <0>;
 	status = "okay";
 	pinctrl-0 = <&spim2_default>;
-	pinctrl-names = "default";
-};
-
-&spi3 {
-	#address-cells = <1>;
-	#size-cells = <0>;
-	status = "okay";
-	pinctrl-0 = <&spim3_default>;
 	pinctrl-names = "default";
 };
 
@@ -140,5 +206,30 @@
 
 &wifi {
 	status = "okay";
+};
+
+&adc1{
+	status = "okay";
+	unit = <1>;
+	channel-count = <8>;
+	#io-channel-cells = <1>;
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	channel@6 {
+		reg = <6>;
+		zephyr,gain = "ADC_GAIN_1";
+		zephyr,reference = "ADC_REF_INTERNAL";
+		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+		zephyr,resolution = <12>;
+	};
+
+	channel@7 {
+		reg = <7>;
+		zephyr,gain = "ADC_GAIN_1";
+		zephyr,reference = "ADC_REF_INTERNAL";
+		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+		zephyr,resolution = <12>;
+	};
 };
 

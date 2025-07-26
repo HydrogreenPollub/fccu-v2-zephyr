@@ -4,58 +4,45 @@
 #include "can.h"
 #include <zephyr/device.h>
 #include <zephyr/drivers/can.h>
+#include <zephyr/drivers/uart.h>
 
 #include "../../zephyr/include/zephyr/devicetree.h"
+#include <zephyr/logging/log.h>
+#include <zephyr/drivers/adc.h>
 
 #define SLEEP_TIME_MS 1000
 
-const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(DT_ALIAS(led_0), gpios);
-const struct device *const can_dev = DEVICE_DT_GET(DT_ALIAS(can));
+LOG_MODULE_REGISTER(app);
 
 
-int led_initialize() {
-    if (!gpio_is_ready_dt(&led)) {
-        printk("Error: GPIO device %s is not ready\n", led.port->name);
-        return 1; // Indicate error
-    } else {
-        printk("GPIO device %s is ready\n", led.port->name);
-    }
 
-    int ret = gpio_pin_configure_dt(&led, GPIO_OUTPUT_ACTIVE);
-    if (ret < 0) {
-        printk("Error %d: failed to configure LED pin %d\n", ret, led.pin);
-        return 1; // Indicate error
-    } else {
-        printk("Successfully configured LED pin %d\n", led.pin);
-    }
-
-    return ret;
-}
-
-int led_on_tick() {
-    int ret = gpio_pin_toggle_dt(&led);
-    printk("[LED] Toggled LED. Return code: %d\n", ret);
-    if (ret < 0) {
-        printk("Error %d: failed to toggle LED pin %d\n", ret, led.pin);
-    }
-    return ret;
-}
-
+// int led_on_tick() {
+//     int ret = gpio_pin_toggle_dt(&led);
+//     // printf("[LED] Toggled LED. Return code: %d\n", ret);
+//     if (ret < 0) {
+//         printk("Error %d: failed to toggle LED pin %d\n", ret, led.pin);
+//     }
+//     return ret;
+// }
 
 
 int main() {
-    printk("Starting program on board: %s\n", CONFIG_BOARD);
+    // // printf("Starting program on board: %s\n", CONFIG_BOARD);
+    //
+    // if (led_initialize()!= 0) {
+    //     printk("LED init failed!\n");
+    //     return -1;
+    // }
 
-    if (led_initialize()!= 0) {
-        printk("LED init failed!\n");
-        return -1;
-    }
+    // can_init(can_dev, 500000);
 
-    printk("Entering blink loop...\n");
+
+
     while (1) {
-        led_on_tick();
+        // led_on_tick();
+        // can_send_(can_dev, 24, data, 2);
 
-        k_msleep(1000);
+        k_msleep(200);
     }
     return 0;
 }
