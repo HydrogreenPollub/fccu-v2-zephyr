@@ -12,7 +12,6 @@
 
 	aliases {
 		i2c-0 = &i2c0;
-		led-0 = &led0;
 		watchdog0 = &wdt0;
 		uart-0 = &uart0;
 		sw0 = &button0;
@@ -21,6 +20,7 @@
 		main-valve-pin = &main_valve0;
 		purge-valve-pin = &purge_valve0;
 		adc-1 = &adc1;
+		can-led = &can_led0;
 	};
 
 	chosen {
@@ -42,24 +42,24 @@
 		};
 	};
 
-	led{
+	can_status_led{
 		compatible = "gpio-leds";
-		led0:led_0{
-			gpios = <&gpio0 3 GPIO_ACTIVE_HIGH>;
+		can_led0:can_led_0{
+			gpios = <&gpio0 12 GPIO_ACTIVE_HIGH>;
 		};
 	};
 	fan_on{
 		compatible = "gpio-leds";
 		fan0:fan_0{
 			label = "fan on pin";
-			gpios = <&gpio0 38 GPIO_ACTIVE_HIGH>;
+			gpios = <&gpio1 38 GPIO_ACTIVE_HIGH>;
 		};
 	};
 	main_valve_on{
 		compatible = "gpio-leds";
 		main_valve0:main_valve_0{
 			label = "main valve on pin";
-			gpios = <&gpio0 46 GPIO_ACTIVE_HIGH>;
+			gpios = <&gpio1 46 GPIO_ACTIVE_HIGH>;
 		};
 	};
 
@@ -67,13 +67,13 @@
 		compatible = "gpio-leds";
 		purge_valve0:purge_valve_0{
 			label = "purge valve on pin";
-			gpios = <&gpio0 45 GPIO_ACTIVE_HIGH>;
+			gpios = <&gpio1 45 GPIO_ACTIVE_HIGH>;
 		};
 	};
 
 
 	zephyr,user {
-		io-channels = <&adc1 4>, <&adc1 6>, <&adc1 7>;
+		io-channels = <&adc1 6>, <&adc1 7>, <&adc1 8>, <&adc1 9>;
 	};
 };
 
@@ -224,9 +224,22 @@
 		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
 		zephyr,resolution = <12>;
 	};
-
 	channel@7 {
 		reg = <7>;
+		zephyr,gain = "ADC_GAIN_1";
+		zephyr,reference = "ADC_REF_INTERNAL";
+		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+		zephyr,resolution = <12>;
+	};
+	channel@8 {
+		reg = <8>;
+		zephyr,gain = "ADC_GAIN_1";
+		zephyr,reference = "ADC_REF_INTERNAL";
+		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+		zephyr,resolution = <12>;
+	};
+	channel@9 {
+		reg = <9>;
 		zephyr,gain = "ADC_GAIN_1";
 		zephyr,reference = "ADC_REF_INTERNAL";
 		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
