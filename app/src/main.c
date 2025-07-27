@@ -4,27 +4,15 @@
 #include "can.h"
 #include <zephyr/device.h>
 #include <zephyr/drivers/can.h>
-#include <zephyr/drivers/uart.h>
 
 #include "../../zephyr/include/zephyr/devicetree.h"
 #include <zephyr/logging/log.h>
-#include <zephyr/drivers/adc.h>
-#include "fccu_v2.h"
 
-#define SLEEP_TIME_MS 1000
+#include "fccu_v2.h"
 
 LOG_MODULE_REGISTER(app);
 
 fccu_device_t fccu;
-
-
-//     int ret = gpio_pin_toggle_dt(&led);
-//     // printf("[LED] Toggled LED. Return code: %d\n", ret);
-//     if (ret < 0) {
-//         printk("Error %d: failed to toggle LED pin %d\n", ret, led.pin);
-//     }
-
-
 
 int main() {
     // // printf("Starting program on board: %s\n", CONFIG_BOARD);

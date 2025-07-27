@@ -1,5 +1,7 @@
 #include "fccu_v2.h"
 
+#include "zephyr/drivers/adc.h"
+
 void fccu_gpio_init(fccu_gpio_t *fccu_gpio) {
 
     *fccu_gpio = (fccu_gpio_t){
@@ -14,14 +16,25 @@ void fccu_gpio_init(fccu_gpio_t *fccu_gpio) {
     gpio_init(&fccu_gpio->purge_valve_on_pin, GPIO_OUTPUT_INACTIVE);
 }
 
-void fccu_adc_init(fccu_adc_channel_t *fccu_channel) {
+void fccu_adc_init(fccu_adc_t *fccu_adc) {
 
-    *fccu_channel = (fccu_adc_channel_t){
-        .low_pressure_sensor = ADC_DT_SPEC_GET_BY_IDX(DT_PATH(zephyr_user), 0),
-        .fuel_cell_voltage = ADC_DT_SPEC_GET_BY_IDX(DT_PATH(zephyr_user), 1),
-        .supercap_voltage = ADC_DT_SPEC_GET_BY_IDX(DT_PATH(zephyr_user), 2),
-        .temp_sensor = ADC_DT_SPEC_GET_BY_IDX(DT_PATH(zephyr_user), 3),
+    *fccu_adc = (fccu_adc_t){
+        .low_pressure_sensor.adc_channel = ADC_DT_SPEC_GET_BY_IDX(DT_PATH(zephyr_user), 0),
+        .fuel_cell_voltage.adc_channel = ADC_DT_SPEC_GET_BY_IDX(DT_PATH(zephyr_user), 1),
+        .supercap_voltage.adc_channel = ADC_DT_SPEC_GET_BY_IDX(DT_PATH(zephyr_user), 2),
+        .temp_sensor.adc_channel = ADC_DT_SPEC_GET_BY_IDX(DT_PATH(zephyr_user), 3),
     };
+    adc_init(&fccu_adc->low_pressure_sensor.adc_channel, &fccu_adc->low_pressure_sensor.sequence, &fccu_adc->low_pressure_sensor.raw_value);
+    adc_init(&fccu_adc->fuel_cell_voltage.adc_channel, &fccu_adc->fuel_cell_voltage.sequence, &fccu_adc->fuel_cell_voltage.raw_value);
+    adc_init(&fccu_adc->supercap_voltage.adc_channel, &fccu_adc->supercap_voltage.sequence, &fccu_adc->supercap_voltage.raw_value);
+    adc_init(&fccu_adc->temp_sensor.adc_channel, &fccu_adc->temp_sensor.sequence, &fccu_adc->temp_sensor.raw_value);
+}
+
+void fccu_adc_read(fccu_adc_t *fccu_adc) {
+    adc_read_(&fccu_adc->low_pressure_sensor.adc_channel, &fccu_adc->low_pressure_sensor.sequence);
+    adc_read_(&fccu_adc->fuel_cell_voltage.adc_channel, &fccu_adc->fuel_cell_voltage.sequence);
+    adc_read_(&fccu_adc->supercap_voltage.adc_channel, &fccu_adc->supercap_voltage.sequence);
+    adc_read_(&fccu_adc->temp_sensor.adc_channel, &fccu_adc->temp_sensor.sequence);
 }
 
 void fccu_can_init(fccu_can_device_t *can_device) {
@@ -30,7 +43,7 @@ void fccu_can_init(fccu_can_device_t *can_device) {
 
 void fccu_init(fccu_device_t* fccu_device) {
     fccu_gpio_init(&fccu_device->fccu_gpio);
-    fccu_adc_init(&fccu_device->fccu_adc_channel);
+    fccu_adc_init(&fccu_device->fccu_adc);
     fccu_can_init(&fccu_device->fccu_can_device);
 }
 
