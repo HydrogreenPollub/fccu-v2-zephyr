@@ -1,7 +1,6 @@
 #ifndef FCCU_V2_H
 #define FCCU_V2_H
 
-
 #include "can.h"
 #include "gpio.h"
 #include "pwm.h"
@@ -38,20 +37,20 @@ typedef struct {
 }fccu_valve_pin_t;
 
 typedef struct {
-    const struct device can_device;
+    const struct device *can_device;
     struct gpio_dt_spec can_status_led;
 }fccu_can_t;
 
 
-typedef const struct device *bmp280_sensor_t;
-
+typedef struct device *bmp280_sensor_t;
+typedef struct gpio_dt_spec fccu_button_t;
 
 typedef struct {
-    fccu_valve_pin_t valve_pin;
-    struct gpio_dt_spec start_button;
-    fccu_fan_t fccu_fan;
-    fccu_adc_t fccu_adc;
-    fccu_can_t fccu_can;
+    fccu_valve_pin_t valve_pins;
+    fccu_button_t start_button;
+    fccu_fan_t fan;
+    fccu_adc_t adc;
+    fccu_can_t can;
     bmp280_sensor_t bmp280_sensor;
 }fccu_device_t;
 
@@ -60,16 +59,15 @@ void fccu_adc_init(fccu_adc_t *fccu_adc);
 void fccu_can_init(fccu_can_t *can_device);
 void fccu_fan_init(fccu_fan_t *fan);
 void fccu_valves_init(fccu_valve_pin_t *valve_pin);
-
-
+void fccu_start_button_init(fccu_button_t *button);
 
 
 
 void fccu_bmp280_sensor_init(bmp280_sensor_t *sensor);
 
+
+
 void fccu_bmp280_sensor_read(bmp280_sensor_t *sensor);
-
-
 void fccu_adc_read(fccu_adc_t *fccu_adc);
 void fccu_on_tick(fccu_device_t* fccu_device);
 

@@ -37,7 +37,7 @@ int can_init(const struct device *can_dev, uint32_t baudrate)
 {
     struct can_timing timing;
     int ret, filter_id;
-    const struct can_filter my_filter = {
+    struct can_filter my_filter = {
         .flags = 0U,
         .id = 0x123,
         .mask = CAN_STD_ID_MASK
