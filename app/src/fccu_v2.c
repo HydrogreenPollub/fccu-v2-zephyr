@@ -71,18 +71,18 @@ void fccu_bmp280_sensor_init(bmp280_sensor_t *sensor) {
 void fccu_bmp280_sensor_read(bmp280_sensor_t *sensor) {
     int ret = sensor_sample_fetch(sensor->sensor);
     if (ret) {
-        LOG_INF("Sensor sample update error: %d\n", ret);
+        LOG_ERR("Sensor sample update error: %d\n", ret);
         return;
     }
-    sensor_channel_get(sensor->sensor, SENSOR_CHAN_AMBIENT_TEMP, &sensor->temperature);
-    sensor_channel_get(sensor->sensor, SENSOR_CHAN_PRESS, &sensor->pressure);
-    sensor_channel_get(sensor->sensor, SENSOR_CHAN_HUMIDITY, &sensor->humidity);
+    sensor_channel_get(sensor->sensor, SENSOR_CHAN_AMBIENT_TEMP, &sensor->temperature_buffer);
+    sensor_channel_get(sensor->sensor, SENSOR_CHAN_PRESS, &sensor->pressure_buffer);
+    sensor_channel_get(sensor->sensor, SENSOR_CHAN_HUMIDITY, &sensor->humidity_buffer);
 
-    // printk("Temp: %.2f C, Pressure: %.2f kPa, Humidity: %.2f %%\n",
-    //        sensor_value_to_double(&temp),
-    //        sensor_value_to_double(&press) / 1000.0,
-    //        sensor_value_to_double(&hum));
+    sensor->temperature = sensor_value_to_float(&sensor->temperature_buffer);
+    sensor->pressure = sensor_value_to_float(&sensor->pressure_buffer)/ 100.0f;
+    sensor->humidity = sensor_value_to_float(&sensor->humidity_buffer);
 
+    LOG_INF("Temp: %.2f C, Pressure: %.2f hPa, Humidity: %.2f RH\n", sensor->temperature, sensor->pressure, sensor->humidity);
 }
 
 void fccu_adc_read(fccu_adc_t *fccu_adc) {
