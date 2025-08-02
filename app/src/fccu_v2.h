@@ -10,6 +10,8 @@
 #include <zephyr/drivers/sensor_data_types.h>
 #include <zephyr/rtio/rtio.h>
 #include <zephyr/dsp/print_format.h>
+#include <zephyr/logging/log.h>
+
 
 
 
@@ -42,7 +44,13 @@ typedef struct {
 }fccu_can_t;
 
 
-typedef struct device *bmp280_sensor_t;
+typedef struct {
+    const struct device *sensors_device;
+    struct sensor_value temperature;
+    struct sensor_value pressure;
+    struct sensor_value humidity;
+}bmp280_sensor_t;
+
 typedef struct gpio_dt_spec fccu_button_t;
 
 typedef struct {
@@ -55,19 +63,19 @@ typedef struct {
 }fccu_device_t;
 
 void fccu_init(fccu_device_t *fccu_device);
-void fccu_adc_init(fccu_adc_t *fccu_adc);
-void fccu_can_init(fccu_can_t *can_device);
+void fccu_adc_init(fccu_adc_t *adc);
+void fccu_can_init(fccu_can_t *can);
 void fccu_fan_init(fccu_fan_t *fan);
 void fccu_valves_init(fccu_valve_pin_t *valve_pin);
 void fccu_start_button_init(fccu_button_t *button);
 
 
 
-void fccu_bmp280_sensor_init(bmp280_sensor_t *sensor);
+void fccu_bmp280_sensor_init(bmp280_sensor_t sensor);
 
 
 
-void fccu_bmp280_sensor_read(bmp280_sensor_t *sensor);
+void fccu_bmp280_sensor_read(bmp280_sensor_t sensor);
 void fccu_adc_read(fccu_adc_t *fccu_adc);
 void fccu_on_tick(fccu_device_t* fccu_device);
 
