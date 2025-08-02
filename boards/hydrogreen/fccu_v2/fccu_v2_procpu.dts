@@ -17,6 +17,7 @@
 		sw0 = &button0;
 		can = &twai;
 		fan-pin = &fan0;
+		fan-pwm = &fan_pwm0;
 		main-valve-pin = &main_valve0;
 		purge-valve-pin = &purge_valve0;
 		adc-1 = &adc1;
@@ -75,6 +76,14 @@
 	zephyr,user {
 		io-channels = <&adc1 6>, <&adc1 7>, <&adc1 8>, <&adc1 9>;
 	};
+
+	pwm_leds{
+		compatible = "pwm-leds";
+		fan_pwm0:pwm_pwm_0{
+			pwms = <&ledc0 0 40000 0>;
+		};
+	};
+
 };
 
 &usb_serial {
@@ -101,6 +110,13 @@
 	pinctrl-0 = <&i2c0_default>;
 	pinctrl-names = "default";
 	status = "okay";
+
+
+	bme280@76 {
+		compatible = "bosch,bme280";
+		reg = <0x76>;
+	};
+
 
 //	ads1115:ads1015@48 {
 //		compatible = "ti,ads1015";
@@ -244,6 +260,28 @@
 		zephyr,reference = "ADC_REF_INTERNAL";
 		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
 		zephyr,resolution = <12>;
+	};
+};
+
+//&mcpwm0 {
+//	pinctrl-0 = <&mcpwm0_default>;
+//	pinctrl-names = "default";
+//	prescale = <255>;
+//	prescale-timer0 = <24>;
+////	prescale-timer1 = <0>;
+////	prescale-timer2 = <255>;
+//	status = "okay";
+//};
+
+&ledc0{
+	status = "okay";
+	pinctrl-0 = <&ledc0_default>;
+	pinctrl-names = "default";
+	#address-cells = <1>;
+	#size-cells = <0>;
+	channel@0{
+		reg = <0x0>;
+		timer = <0>;
 	};
 };
 

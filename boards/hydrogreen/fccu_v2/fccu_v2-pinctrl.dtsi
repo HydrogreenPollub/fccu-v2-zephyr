@@ -96,4 +96,25 @@
 					 <TWAI_RX_GPIO39>;
 		};
 	};
+
+//	mcpwm0_default: mcpwm0_default {
+//		group1 {
+//			pinmux = <MCPWM0_OUT0A_GPIO0>,
+//					 <MCPWM0_OUT0B_GPIO2>,
+//					 <MCPWM0_OUT1A_GPIO4>;
+//			output-enable;
+//		};
+//		group2 {
+//			pinmux = <MCPWM0_CAP0_GPIO5>;
+//		};
+//	};
+
+	ledc0_default: ledc0_default {
+		group1 {
+			pinmux = <LEDC_CH0_GPIO37>,
+					 <LEDC_CH1_GPIO2>,
+					 <LEDC_CH2_GPIO4>;
+			output-enable;
+		};
+	};
 };
