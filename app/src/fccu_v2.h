@@ -46,9 +46,12 @@ typedef struct {
 
 typedef struct {
     const struct device *sensor;
-    struct sensor_value temperature;
-    struct sensor_value pressure;
-    struct sensor_value humidity;
+    struct sensor_value temperature_buffer;
+    struct sensor_value pressure_buffer;
+    struct sensor_value humidity_buffer;
+    float temperature;
+    float pressure;
+    float humidity;
 }bmp280_sensor_t;
 
 typedef struct gpio_dt_spec fccu_button_t;
