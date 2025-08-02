@@ -64,7 +64,7 @@ void fccu_init(fccu_device_t *fccu_device);
 void fccu_adc_init(fccu_adc_t *fccu_adc);
 void fccu_can_init(fccu_can_t *can_device);
 void fccu_fan_init(fccu_fan_t *fan);
-void
+void fccu_valves_init(fccu_valve_pin_t *valve_pin);
 
 
 

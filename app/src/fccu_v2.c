@@ -15,6 +15,15 @@ void fccu_gpio_init(fccu_gpio_t *fccu_gpio) {
     gpio_init(&fccu_gpio->purge_valve_on_pin, GPIO_OUTPUT_INACTIVE);
 }
 
+void fccu_valves_init(fccu_valve_pin_t *valve_pin) {
+    *valve_pin = (fccu_valve_pin_t){
+        .main_valve_on_pin = GPIO_DT_SPEC_GET(DT_ALIAS(main_valve_pin), gpios),
+        .purge_valve_on_pin = GPIO_DT_SPEC_GET(DT_ALIAS(purge_valve_pin), gpios),
+    };
+    gpio_init(&valve_pin->main_valve_on_pin, GPIO_OUTPUT_INACTIVE);
+    gpio_init(&valve_pin->purge_valve_on_pin, GPIO_OUTPUT_INACTIVE);
+}
+
 void fccu_adc_init(fccu_adc_t *fccu_adc) {
 
     *fccu_adc = (fccu_adc_t){
