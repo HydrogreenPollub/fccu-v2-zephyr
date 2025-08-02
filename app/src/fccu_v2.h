@@ -32,7 +32,10 @@ typedef struct {
     struct gpio_dt_spec fan_on_pin;
 }fccu_fan_t;
 
-
+typedef struct {
+    struct gpio_dt_spec main_valve_on_pin;
+    struct gpio_dt_spec purge_valve_on_pin;
+}fccu_valve_pin_t;
 
 
 
@@ -41,8 +44,6 @@ typedef struct {
 typedef struct {
     struct gpio_dt_spec can_status_led;
 
-    struct gpio_dt_spec main_valve_on_pin;
-    struct gpio_dt_spec purge_valve_on_pin;
 }fccu_gpio_t;
 
 typedef const struct device *fccu_can_t;
@@ -50,7 +51,8 @@ typedef const struct device *bmp280_sensor_t;
 
 
 typedef struct {
-    fccu_gpio_t fccu_gpio;
+    fccu_valve_pin_t valve_pin;
+    fccu_fan_t fccu_fan;
     fccu_adc_t fccu_adc;
     fccu_can_t fccu_can;
     bmp280_sensor_t bmp280_sensor;
@@ -58,10 +60,11 @@ typedef struct {
 }fccu_device_t;
 
 void fccu_init(fccu_device_t *fccu_device);
-void fccu_gpio_init(fccu_gpio_t *fccu_gpio);
+// void fccu_gpio_init(fccu_gpio_t *fccu_gpio);
 void fccu_adc_init(fccu_adc_t *fccu_adc);
 void fccu_can_init(fccu_can_t *can_device);
-void_fccu_fan_init()
+void fccu_fan_init(fccu_fan_t *fan);
+void
 
 
 
