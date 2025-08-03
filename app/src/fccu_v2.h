@@ -8,8 +8,6 @@
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/sensor.h>
 #include <zephyr/drivers/sensor_data_types.h>
-#include <zephyr/rtio/rtio.h>
-#include <zephyr/dsp/print_format.h>
 #include <zephyr/logging/log.h>
 
 

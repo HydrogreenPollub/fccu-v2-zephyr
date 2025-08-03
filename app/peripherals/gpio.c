@@ -39,4 +39,6 @@ int gpio_set_interrupt(struct gpio_dt_spec *gpio, gpio_flags_t flags, struct gpi
     }
     gpio_init_callback(&gpio_cb_data, handler, BIT(gpio->pin));
     gpio_add_callback(gpio->port, &gpio_cb_data);
+
+    return 1;
 }

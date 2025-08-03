@@ -44,18 +44,25 @@ void fccu_can_init(fccu_can_t *can) {
     can_init(can->can_device, 500000);
 }
 
+void button_pressed(const struct device *dev, struct gpio_callback *cb,
+            uint32_t pins)
+{
+    printk("Button pressed at %" PRIu32 "\n", k_cycle_get_32());
+}
+
+
 void fccu_start_button_init(fccu_button_t *button) {
-    fccu_button_t button_temp = GPIO_DT_SPEC_GET(DT_ALIAS(button_start), gpios);
-    *button = button_temp;
-    gpio_init(button, GPIO_INPUT);
-    gpio_pin_interrupt_configure_dt(button, GPIO_INT_EDGE_TO_INACTIVE);
+    *button = (fccu_button_t){
+        GPIO_DT_SPEC_GET(DT_ALIAS(button_start), gpios),
+    };
+    gpio_init(&button->button, GPIO_INPUT);
+    gpio_set_interrupt(&button->button, GPIO_INT_EDGE_TO_INACTIVE, button->button_cb_data, button_pressed);
 }
 
 void fccu_bmp280_sensor_init(bmp280_sensor_t *sensor) {
     sensor->sensor = DEVICE_DT_GET_ANY(bosch_bme280);
 
     if (sensor->sensor == NULL) {
-        /* No such node, or the node does not have status "okay". */
         LOG_ERR("\nError: no device found.\n");
         return;
     }
@@ -82,17 +89,8 @@ void fccu_bmp280_sensor_read(bmp280_sensor_t *sensor) {
     sensor->pressure = sensor_value_to_float(&sensor->pressure_buffer)/ 100.0f;
     sensor->humidity = sensor_value_to_float(&sensor->humidity_buffer);
 
-    LOG_INF("Temp: %.2f C, Pressure: %.2f hPa, Humidity: %.2f RH\n", sensor->temperature, sensor->pressure, sensor->humidity);
+    LOG_INF("Temp: %.2f C, Pressure: %.2f hPa, Humidity: %.2f RH\n", (double)sensor->temperature, (double)sensor->pressure, (double)sensor->humidity);
 }
-
-void fccu_adc_read(fccu_adc_t *fccu_adc) {
-    adc_read_(&fccu_adc->low_pressure_sensor.adc_channel, &fccu_adc->low_pressure_sensor.sequence);
-    adc_read_(&fccu_adc->fuel_cell_voltage.adc_channel, &fccu_adc->fuel_cell_voltage.sequence);
-    adc_read_(&fccu_adc->supercap_voltage.adc_channel, &fccu_adc->supercap_voltage.sequence);
-    adc_read_(&fccu_adc->temp_sensor.adc_channel, &fccu_adc->temp_sensor.sequence);
-}
-
-
 
 void fccu_init(fccu_device_t* fccu_device) {
     fccu_adc_init(&fccu_device->adc);
@@ -100,7 +98,14 @@ void fccu_init(fccu_device_t* fccu_device) {
     fccu_valves_init(&fccu_device->valve_pins);
     fccu_fan_init(&fccu_device->fan);
     fccu_start_button_init(&fccu_device->start_button);
+    fccu_bmp280_sensor_init(&fccu_device->bmp280_sensor);
+}
 
+void fccu_adc_read(fccu_adc_t *fccu_adc) {
+    adc_read_(&fccu_adc->low_pressure_sensor.adc_channel, &fccu_adc->low_pressure_sensor.sequence);
+    adc_read_(&fccu_adc->fuel_cell_voltage.adc_channel, &fccu_adc->fuel_cell_voltage.sequence);
+    adc_read_(&fccu_adc->supercap_voltage.adc_channel, &fccu_adc->supercap_voltage.sequence);
+    adc_read_(&fccu_adc->temp_sensor.adc_channel, &fccu_adc->temp_sensor.sequence);
 }
 
 void fccu_on_tick(fccu_device_t* fccu_device) {
