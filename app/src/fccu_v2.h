@@ -54,7 +54,10 @@ typedef struct {
     float humidity;
 }bmp280_sensor_t;
 
-typedef struct gpio_dt_spec fccu_button_t;
+typedef struct {
+    struct gpio_dt_spec button;
+    struct gpio_callback button_cb_data;
+}fccu_button_t;
 
 typedef struct {
     fccu_valve_pin_t valve_pins;
