@@ -2,6 +2,8 @@
 
 LOG_MODULE_REGISTER(fccu);
 
+fccu_flags_t flags;
+
 void fccu_valves_init(fccu_valve_pin_t *valve_pin) {
     *valve_pin = (fccu_valve_pin_t){
         .main_valve_on_pin = GPIO_DT_SPEC_GET(DT_ALIAS(main_valve_pin), gpios),
@@ -47,6 +49,7 @@ void fccu_can_init(fccu_can_t *can) {
 void button_pressed(const struct device *dev, struct gpio_callback *cb,
             uint32_t pins)
 {
+    flags.start_button_pressed_flag = true;
     printk("Button pressed at %" PRIu32 "\n", k_cycle_get_32());
 }
 
@@ -57,6 +60,7 @@ void fccu_start_button_init(fccu_button_t *button) {
     };
     gpio_init(&button->button, GPIO_INPUT);
     gpio_set_interrupt(&button->button, GPIO_INT_EDGE_TO_INACTIVE, button->button_cb_data, button_pressed);
+    flags.start_button_pressed_flag = false;
 }
 
 void fccu_bmp280_sensor_init(bmp280_sensor_t *sensor) {

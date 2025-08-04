@@ -10,9 +10,6 @@
 #include <zephyr/drivers/sensor_data_types.h>
 #include <zephyr/logging/log.h>
 
-
-
-
 typedef struct {
     struct adc_dt_spec adc_channel;
     struct adc_sequence sequence;
@@ -41,7 +38,6 @@ typedef struct {
     struct gpio_dt_spec can_status_led;
 }fccu_can_t;
 
-
 typedef struct {
     const struct device *sensor;
     struct sensor_value temperature_buffer;
@@ -58,7 +54,7 @@ typedef struct {
 }fccu_button_t;
 
 typedef struct {
-    uint8_t start_button_pressed_flag;
+    uint8_t start_button_pressed_flag :1;
 }fccu_flags_t;
 
 typedef struct {
@@ -67,9 +63,10 @@ typedef struct {
     fccu_fan_t fan;
     fccu_adc_t adc;
     fccu_can_t can;
-    fccu_flags_t flags;
     bmp280_sensor_t bmp280_sensor;
 }fccu_device_t;
+
+extern fccu_flags_t flags;
 
 void fccu_init(fccu_device_t *fccu_device);
 void fccu_adc_init(fccu_adc_t *adc);
