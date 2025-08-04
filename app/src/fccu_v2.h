@@ -58,11 +58,16 @@ typedef struct {
 }fccu_button_t;
 
 typedef struct {
+    uint8_t start_button_pressed_flag;
+}fccu_flags_t;
+
+typedef struct {
     fccu_valve_pin_t valve_pins;
     fccu_button_t start_button;
     fccu_fan_t fan;
     fccu_adc_t adc;
     fccu_can_t can;
+    fccu_flags_t flags;
     bmp280_sensor_t bmp280_sensor;
 }fccu_device_t;
 
