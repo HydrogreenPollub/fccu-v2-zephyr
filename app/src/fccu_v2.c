@@ -13,6 +13,18 @@ void fccu_valves_init(fccu_valve_pin_t *valve_pin) {
     gpio_init(&valve_pin->purge_valve_on_pin, GPIO_OUTPUT_INACTIVE);
 }
 
+static void fccu_main_valve_on(fccu_valve_pin_t *valve_pin) {
+    gpio_set(&valve_pin->main_valve_on_pin);
+}
+
+static void fccu_purge_valve_on(fccu_valve_pin_t *valve_pin) {
+    gpio_set(&valve_pin->purge_valve_on_pin);
+}
+
+static void fccu_fan_on(fccu_fan_t *fan) {
+    gpio_set(&fan->fan_on_pin);
+}
+
 void fccu_adc_init(fccu_adc_t *adc) {
 
     *adc = (fccu_adc_t){
@@ -96,13 +108,13 @@ void fccu_bmp280_sensor_read(bmp280_sensor_t *sensor) {
     LOG_INF("Temp: %.2f C, Pressure: %.2f hPa, Humidity: %.2f RH\n", (double)sensor->temperature, (double)sensor->pressure, (double)sensor->humidity);
 }
 
-void fccu_init(fccu_device_t* fccu_device) {
-    fccu_adc_init(&fccu_device->adc);
-    fccu_can_init(&fccu_device->can);
-    fccu_valves_init(&fccu_device->valve_pins);
-    fccu_fan_init(&fccu_device->fan);
-    fccu_start_button_init(&fccu_device->start_button);
-    fccu_bmp280_sensor_init(&fccu_device->bmp280_sensor);
+void fccu_init(fccu_device_t* fccu) {
+    fccu_adc_init(&fccu->adc);
+    fccu_can_init(&fccu->can);
+    fccu_valves_init(&fccu->valve_pins);
+    fccu_fan_init(&fccu->fan);
+    fccu_start_button_init(&fccu->start_button);
+    fccu_bmp280_sensor_init(&fccu->bmp280_sensor);
 }
 
 void fccu_adc_read(fccu_adc_t *fccu_adc) {
@@ -112,7 +124,14 @@ void fccu_adc_read(fccu_adc_t *fccu_adc) {
     adc_read_(&fccu_adc->temp_sensor.adc_channel, &fccu_adc->temp_sensor.sequence);
 }
 
-void fccu_on_tick(fccu_device_t* fccu_device) {
+void fccu_on_tick(fccu_device_t* fccu) {
+    fccu_bmp280_sensor_read(&fccu->bmp280_sensor);
+    fccu_adc_read(&fccu->adc);
 
+    if ((flags.start_button_pressed_flag == true) || (fccu->adc.low_pressure_sensor.voltage >= 0.5f)) {
+        fccu_main_valve_on(&fccu->valve_pins.main_valve_on_pin);
+
+
+    }
 }
 

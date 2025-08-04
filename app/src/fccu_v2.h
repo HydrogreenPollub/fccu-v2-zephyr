@@ -14,6 +14,7 @@ typedef struct {
     struct adc_dt_spec adc_channel;
     struct adc_sequence sequence;
     int16_t raw_value;
+    float voltage;
 }fccu_adc_device_t;
 
 typedef struct {
@@ -68,7 +69,7 @@ typedef struct {
 
 extern fccu_flags_t flags;
 
-void fccu_init(fccu_device_t *fccu_device);
+void fccu_init(fccu_device_t *fccu);
 void fccu_adc_init(fccu_adc_t *adc);
 void fccu_can_init(fccu_can_t *can);
 void fccu_fan_init(fccu_fan_t *fan);
@@ -79,9 +80,8 @@ void fccu_bmp280_sensor_init(bmp280_sensor_t *sensor);
 
 
 void fccu_bmp280_sensor_read(bmp280_sensor_t *sensor);
-
-
 void fccu_adc_read(fccu_adc_t *fccu_adc);
-void fccu_on_tick(fccu_device_t* fccu_device);
+
+void fccu_on_tick(fccu_device_t* fccu);
 
 #endif //FCCU_V2_H
