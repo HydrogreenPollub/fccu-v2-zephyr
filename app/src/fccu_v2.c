@@ -25,6 +25,10 @@ static void fccu_fan_on(fccu_fan_t *fan) {
     gpio_set(&fan->fan_on_pin);
 }
 
+static void fccu_fan_pwm_set(fccu_fan_t *fan, uint8_t pwm_percent) {
+    pwm_set_pulse_width_percent(&fan->fan_pwm, pwm_percent);
+}
+
 void fccu_adc_init(fccu_adc_t *adc) {
 
     *adc = (fccu_adc_t){
@@ -129,7 +133,11 @@ void fccu_on_tick(fccu_device_t* fccu) {
     fccu_adc_read(&fccu->adc);
 
     if ((flags.start_button_pressed_flag == true) || (fccu->adc.low_pressure_sensor.voltage >= 0.5f)) {
-        fccu_main_valve_on(&fccu->valve_pins.main_valve_on_pin);
+        fccu_main_valve_on(&fccu->valve_pins);
+        fccu_fan_on(&fccu->fan);
+        fccu_fan_pwm_set(&fccu->fan, 20);
+
+
 
 
     }
