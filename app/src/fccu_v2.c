@@ -43,6 +43,23 @@ void fccu_adc_init(fccu_adc_t *adc) {
     adc_init(&adc->temp_sensor.adc_channel, &adc->temp_sensor.sequence, &adc->temp_sensor.raw_value);
 }
 
+void fccu_ads1015_adc_init(ads1015_adc_t *adc) {
+
+    *adc = (ads1015_adc_t){
+        .low_pressure_sensor.adc_channel = ADC_DT_SPEC_GET_BY_IDX(DT_PATH(zephyr_user), 4),
+        .high_pressure_sensor.adc_channel = ADC_DT_SPEC_GET_BY_IDX(DT_PATH(zephyr_user), 5),
+        .fuel_cell_current.adc_channel = ADC_DT_SPEC_GET_BY_IDX(DT_PATH(zephyr_user), 6),
+    };
+    adc_init(&adc->low_pressure_sensor.adc_channel, &adc->low_pressure_sensor.sequence, &adc->low_pressure_sensor.raw_value);
+    adc->high_pressure_sensor.adc_channel.channel_id = 0;
+    adc->high_pressure_sensor.adc_channel.channel_cfg.channel_id = 0;
+    adc_init(&adc->high_pressure_sensor.adc_channel, &adc->high_pressure_sensor.sequence, &adc->high_pressure_sensor.raw_value);
+    adc->fuel_cell_current.adc_channel.channel_id = 0;
+    adc->fuel_cell_current.adc_channel.channel_cfg.channel_id = 0;
+    adc_init(&adc->fuel_cell_current.adc_channel, &adc->fuel_cell_current.sequence, &adc->fuel_cell_current.raw_value);
+}
+
+
 
 void fccu_fan_init(fccu_fan_t *fan) {
     *fan = (fccu_fan_t){
@@ -113,12 +130,13 @@ void fccu_bmp280_sensor_read(bmp280_sensor_t *sensor) {
 }
 
 void fccu_init(fccu_device_t* fccu) {
-    fccu_adc_init(&fccu->adc);
-    fccu_can_init(&fccu->can);
-    fccu_valves_init(&fccu->valve_pins);
-    fccu_fan_init(&fccu->fan);
-    fccu_start_button_init(&fccu->start_button);
-    fccu_bmp280_sensor_init(&fccu->bmp280_sensor);
+    // fccu_adc_init(&fccu->adc);
+    // fccu_can_init(&fccu->can);
+    // fccu_valves_init(&fccu->valve_pins);
+    // fccu_fan_init(&fccu->fan);
+    // fccu_start_button_init(&fccu->start_button);
+    // fccu_bmp280_sensor_init(&fccu->bmp280_sensor);
+    fccu_ads1015_adc_init(&fccu->ads1015_adc);
 }
 
 void fccu_adc_read(fccu_adc_t *fccu_adc) {

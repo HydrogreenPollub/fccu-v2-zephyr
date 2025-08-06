@@ -25,6 +25,12 @@ typedef struct {
 }fccu_adc_t;
 
 typedef struct {
+    fccu_adc_device_t low_pressure_sensor;
+    fccu_adc_device_t high_pressure_sensor;
+    fccu_adc_device_t fuel_cell_current;
+}ads1015_adc_t;
+
+typedef struct {
     struct pwm_dt_spec fan_pwm;
     struct gpio_dt_spec fan_on_pin;
 }fccu_fan_t;
@@ -65,6 +71,7 @@ typedef struct {
     fccu_adc_t adc;
     fccu_can_t can;
     bmp280_sensor_t bmp280_sensor;
+    ads1015_adc_t ads1015_adc;
 }fccu_device_t;
 
 extern fccu_flags_t flags;
@@ -76,6 +83,7 @@ void fccu_fan_init(fccu_fan_t *fan);
 void fccu_valves_init(fccu_valve_pin_t *valve_pin);
 void fccu_start_button_init(fccu_button_t *button);
 void fccu_bmp280_sensor_init(bmp280_sensor_t *sensor);
+void fccu_ads1015_adc_init(ads1015_adc_t *adc);
 
 
 
