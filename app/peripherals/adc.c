@@ -19,7 +19,6 @@ int adc_init(const struct adc_dt_spec *adc, struct adc_sequence *sequence, int16
         .buffer_size = sizeof(buffer),
         .resolution = adc->resolution,
     };
-
     return 0;
 }
 
@@ -29,7 +28,8 @@ int adc_read_(const struct adc_dt_spec *adc, struct adc_sequence *sequence) {
     if (ret != 0) {
         LOG_ERR("ADC read failed (err %d)", ret);
     } else {
-        LOG_INF("ADC raw value: %p", sequence->buffer);
+        int16_t *value = sequence->buffer;
+        LOG_INF("ADC raw value: %d \n", value[0]);
     }
     return ret;
 }
