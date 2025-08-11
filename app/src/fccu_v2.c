@@ -118,7 +118,6 @@ void fccu_init(fccu_device_t* fccu) {
     // fccu_fan_init(&fccu->fan);
     // fccu_start_button_init(&fccu->start_button);
     // fccu_bmp280_sensor_init(&fccu->bmp280_sensor);
-    fccu_ads1015_adc_init(&fccu->ads1015_adc);
 }
 
 void fccu_adc_read(fccu_adc_t *adc) {
@@ -134,15 +133,6 @@ void fccu_adc_read(fccu_adc_t *adc) {
     LOG_INF("Temp:\n");
     adc_read_(&adc->temp_sensor.adc_channel, &adc->temp_sensor.sequence);
     k_msleep(500);
-}
-
-void fccu_ads1015_adc_read(ads1015_adc_t *adc) {
-    adc_read_(&adc->low_pressure_sensor.adc_channel, &adc->low_pressure_sensor.sequence);
-    k_msleep(100);
-    adc_read_(&adc->high_pressure_sensor.adc_channel, &adc->high_pressure_sensor.sequence);
-    k_msleep(100);
-    adc_read_(&adc->fuel_cell_current.adc_channel, &adc->fuel_cell_current.sequence);
-    k_msleep(100);
 }
 
 void fccu_on_tick(fccu_device_t* fccu) {

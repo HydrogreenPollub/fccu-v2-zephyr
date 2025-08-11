@@ -85,13 +85,11 @@ void fccu_fan_init(fccu_fan_t *fan);
 void fccu_valves_init(fccu_valve_pin_t *valve_pin);
 void fccu_start_button_init(fccu_button_t *button);
 void fccu_bmp280_sensor_init(bmp280_sensor_t *sensor);
-void fccu_ads1015_adc_init(ads1015_adc_t *adc);
 
 
 
 void fccu_bmp280_sensor_read(bmp280_sensor_t *sensor);
 void fccu_adc_read(fccu_adc_t *adc);
-void fccu_ads1015_adc_read(ads1015_adc_t *adc);
 
 void fccu_on_tick(fccu_device_t* fccu);
 
