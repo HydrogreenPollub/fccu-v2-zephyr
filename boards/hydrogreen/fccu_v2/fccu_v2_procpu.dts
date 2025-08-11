@@ -117,7 +117,6 @@
 		reg = <0x76>;
 	};
 
-
 	ads1015:ads1015@48 {
 		compatible = "ti,ads1015";
 		reg = <0x48>;
@@ -126,38 +125,6 @@
 		#address-cells = <1>;
 		#size-cells = <0>;
 		status = "okay";
-
-		channel0@0 {
-			reg = <0>;
-			zephyr,gain = "ADC_GAIN_1";
-			zephyr,reference = "ADC_REF_INTERNAL";
-			zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
-			zephyr,resolution = <12>;
-		};
-
-		channel1@1 {
-			reg = <1>;
-			zephyr,gain = "ADC_GAIN_1";
-			zephyr,reference = "ADC_REF_INTERNAL";
-			zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
-			zephyr,resolution = <12>;
-		};
-
-		channel2@2 {
-			reg = <2>;
-			zephyr,gain = "ADC_GAIN_1";
-			zephyr,reference = "ADC_REF_INTERNAL";
-			zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
-			zephyr,resolution = <12>;
-		};
-
-		channel3@3 {
-			reg = <3>;
-			zephyr,gain = "ADC_GAIN_1";
-			zephyr,reference = "ADC_REF_INTERNAL";
-			zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
-			zephyr,resolution = <12>;
-		};
 	};
 };
 
