@@ -19,6 +19,8 @@ target_sources(app PRIVATE
         peripherals/can.c
         peripherals/gpio.c
         peripherals/adc.c
+        peripherals/pwm.c
+        peripherals/ads1015.c
 )
 
 target_include_directories(app PRIVATE
