@@ -62,6 +62,10 @@ typedef struct {
 }fccu_button_t;
 
 typedef struct {
+    struct device *counter_dev;
+}fccu_counter_t;
+
+typedef struct {
     uint8_t start_button_pressed_flag :1;
 }fccu_flags_t;
 
@@ -71,6 +75,7 @@ typedef struct {
     fccu_fan_t fan;
     fccu_adc_t adc;
     fccu_can_t can;
+    fccu_counter_t counter;
     bmp280_sensor_t bmp280_sensor;
     ads1015_adc_data_t ads1015_data;
     ads1015_type_t ads1015_device;

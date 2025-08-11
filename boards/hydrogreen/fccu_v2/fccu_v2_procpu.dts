@@ -162,7 +162,7 @@
 };
 
 &timer0 {
-	status = "disabled";
+	status = "okay";
 };
 
 &timer1 {
