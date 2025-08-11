@@ -115,6 +115,7 @@
 	bme280@76 {
 		compatible = "bosch,bme280";
 		reg = <0x76>;
+		status = "okay";
 	};
 
 	ads1015:ads1015@48 {
