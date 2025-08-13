@@ -7,6 +7,7 @@
 
 int adc_init(const struct adc_dt_spec *adc, struct adc_sequence *sequence, int16_t *buffer);
 int adc_read_(const struct adc_dt_spec *adc, struct adc_sequence *sequence);
+float adc_map(float x, float in_min, float in_max, float out_min, float out_max);
 
 
 #endif //ADC_H

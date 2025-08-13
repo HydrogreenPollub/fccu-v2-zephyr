@@ -33,3 +33,8 @@ int adc_read_(const struct adc_dt_spec *adc, struct adc_sequence *sequence) {
     }
     return ret;
 }
+
+float adc_map(float x, float in_min, float in_max, float out_min, float out_max)
+{
+    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
