@@ -22,6 +22,9 @@
 		purge-valve-pin = &purge_valve0;
 		adc-1 = &adc0;
 		can-led = &can_led0;
+		counter0 = &timer0;
+		driver-enable = &driver_enable0;
+		driver-pwm = &driver_pwm0;
 	};
 
 	chosen {
@@ -37,9 +40,9 @@
 	buttons {
 		compatible = "gpio-keys";
 		button_start0: button_start_0 {
-			gpios = <&gpio0 1 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+			gpios = <&gpio0 11 (GPIO_PULL_DOWN | GPIO_ACTIVE_HIGH)>;
 			label = "start button";
-			zephyr,code = <INPUT_KEY_1>;
+			zephyr,code = <INPUT_KEY_0>;
 		};
 	};
 
@@ -72,6 +75,14 @@
 		};
 	};
 
+	driver_enable{
+		compatible = "gpio-leds";
+		driver_enable0:driver_enable_0{
+			label = "driver enable pin";
+			gpios = <&gpio0 21 GPIO_ACTIVE_HIGH>;
+		};
+	};
+
 
 	zephyr,user {
 		io-channels = <&adc0 6>, <&adc0 7>, <&adc0 8>, <&adc0 9>, <&ads1015 0>, <&ads1015 1>, <&ads1015 2>,<&ads1015 3>;
@@ -81,6 +92,9 @@
 		compatible = "pwm-leds";
 		fan_pwm0:pwm_pwm_0{
 			pwms = <&ledc0 0 40000 0>;
+		};
+		driver_pwm0:driver_pwm_0{
+			pwms = <&ledc0 1 40000 0>;
 		};
 	};
 
@@ -163,10 +177,13 @@
 
 &timer0 {
 	status = "okay";
+	counter {
+		status = "okay";
+	};
 };
 
 &timer1 {
-	status = "disabled";
+	status = "okay";
 };
 
 &timer2 {
@@ -267,6 +284,10 @@
 	channel@0{
 		reg = <0x0>;
 		timer = <0>;
+	};
+	channel@1{
+		reg = <0x1>;
+		timer = <1>;
 	};
 };
 
