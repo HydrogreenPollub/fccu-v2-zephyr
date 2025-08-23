@@ -2,7 +2,13 @@
 
 LOG_MODULE_REGISTER(fccu);
 
-fccu_flags_t flags;
+uint8_t fan_pwm_percent = 0;
+
+
+volatile fccu_flags_t flags;
+
+ads1015_type_t ads1015_device;
+ads1015_adc_data_t ads1015_data;
 
  fccu_valve_pin_t valve_pin = {
     .main_valve_on_pin = GPIO_DT_SPEC_GET(DT_ALIAS(main_valve_pin), gpios),
@@ -42,30 +48,41 @@ bmp280_sensor_t sensor = {
 void fccu_valves_init() {
     gpio_init(&valve_pin.main_valve_on_pin, GPIO_OUTPUT_INACTIVE);
     gpio_init(&valve_pin.purge_valve_on_pin, GPIO_OUTPUT_INACTIVE);
+
+    flags.main_valve_on = false;
+    flags.purge_valve_on = false;
 }
 
-static void fccu_main_valve_on(fccu_valve_pin_t *valve_pin) {
-    gpio_set(&valve_pin->main_valve_on_pin);
+static void fccu_main_valve_on() {
+    gpio_set(&valve_pin.main_valve_on_pin);
+    flags.main_valve_on = true;
+    LOG_INF("Main Valve on\n");
 }
 
-static void fccu_purge_valve_on(fccu_valve_pin_t *valve_pin) {
-    gpio_set(&valve_pin->purge_valve_on_pin);
+static void fccu_purge_valve_on() {
+    gpio_set(&valve_pin.purge_valve_on_pin);
+    flags.purge_valve_on = true;
+    LOG_INF("Purge Valve on\n");
 }
 
-static void fccu_fan_on(fccu_fan_t *fan) {
-    gpio_set(&fan->fan_on_pin);
+static void fccu_fan_on() {
+    gpio_set(&fan.fan_on_pin);
+    flags.fan_on = true;
+    LOG_INF("Fan on\n");
 }
 
-static void fccu_current_driver_enable(fccu_current_driver_t *driver) {
-    gpio_set(&driver->driver_enable_pin);
+static void fccu_current_driver_enable() {
+    gpio_set(&current_driver.driver_enable_pin);
 }
 
-static void fccu_fan_pwm_set(fccu_fan_t *fan, uint8_t pwm_percent) {
-    pwm_set_pulse_width_percent(&fan->fan_pwm, pwm_percent);
+static void fccu_fan_pwm_set(uint8_t pwm_percent) {
+    pwm_set_pulse_width_percent(&fan.fan_pwm, pwm_percent);
+    LOG_INF("Fan PWM set: %" PRIu8 "\n", pwm_percent);
 }
 
-static void fccu_current_driver_set_pwm(fccu_current_driver_t *driver, uint8_t pwm_percent) {
-    pwm_set_pulse_width_percent(&driver->driver_pwm, pwm_percent);
+static void fccu_current_driver_pwm_set(uint8_t pwm_percent) {
+    pwm_set_pulse_width_percent(&current_driver.driver_pwm, pwm_percent);
+    LOG_INF("Current driver PWM set: %" PRIu8 "\n", pwm_percent);
 }
 
 void fccu_adc_init() {
@@ -78,6 +95,8 @@ void fccu_adc_init() {
 void fccu_fan_init() {
     gpio_init(&fan.fan_on_pin, GPIO_OUTPUT_INACTIVE);
     pwm_init(&fan.fan_pwm);
+
+    flags.fan_on = false;
 }
 
 void fccu_can_init() {
@@ -115,9 +134,10 @@ static void cooldown_expired(struct k_work *work)
 {
     ARG_UNUSED(work);
 
-    // int val = gpio_pin_get_dt(&button);
-    flags.start_button_pressed_flag = true;
-    printf("Button pressed at %" PRIu32 "\n", k_cycle_get_32());
+    if (gpio_pin_get_dt(&button.button) == 0) {
+        flags.start_button_pressed = true;
+        printf("Button pressed at %" PRIu32 "\n", k_cycle_get_32());
+    }
 
 }
 static K_WORK_DELAYABLE_DEFINE(cooldown_work, cooldown_expired);
@@ -132,7 +152,7 @@ void button_pressed(const struct device *dev, struct gpio_callback *cb,
 void fccu_start_button_init() {
     gpio_init(&button.button, GPIO_INPUT);
     gpio_set_interrupt(&button.button, GPIO_INT_EDGE_TO_ACTIVE, &button.button_cb_data, button_pressed);
-    flags.start_button_pressed_flag = false;
+    flags.start_button_pressed = false;
     printf("dupa_ok\n");
 }
 
@@ -169,17 +189,16 @@ void fccu_bmp280_sensor_read() {
 }
 
 void fccu_init() {
-    // fccu_adc_init(&fccu->adc);
-    // fccu_can_init(&fccu->can);
-    // fccu_valves_init(&fccu->valve_pins);
-    // fccu_fan_init(&fccu->fan);
+    fccu_adc_init();
+    // fccu_can_init();
+    fccu_valves_init();
+    fccu_fan_init();
     fccu_start_button_init();
-    // fccu_bmp280_sensor_init(&fccu->bmp280_sensor);
-    // fccu_counter_init(&fccu->counter);
-    // ads1015_init(&fccu->ads1015_device);
-    // fccu_current_driver_init(&fccu->current_driver);
-    // fccu_current_driver_enable(&fccu->current_driver);
-    // k_msleep(10);
+    fccu_bmp280_sensor_init();
+    // fccu_counter_init();
+    ads1015_init(&ads1015_device);
+    fccu_current_driver_init();
+    // fccu_current_driver_enable();
 }
 
 void fccu_adc_read() {
@@ -197,17 +216,35 @@ void fccu_adc_read() {
     k_msleep(500);
 }
 
+void fccu_ads1015_read() {
+    ads1015_data.fuel_cell_current = ads1015_read_channel_single_shot(&ads1015_device, 0);
+    ads1015_data.fuel_cell_current = adc_map(ads1015_data.fuel_cell_current, 1.508f, 1.432f, 0, 5); // Current sensor: 0-25A
+    ads1015_data.high_pressure_sensor = ads1015_read_channel_single_shot(&ads1015_device, 2);
+    ads1015_data.low_pressure_sensor = ads1015_read_channel_single_shot(&ads1015_device, 3);
+    LOG_INF("Fuel cell current: %f A\n", ads1015_data.fuel_cell_current);
+    LOG_INF("High_pressure: %f \n", ads1015_data.high_pressure_sensor);
+    LOG_INF("Low_pressure: %f \n", ads1015_data.low_pressure_sensor);
+
+}
+
 void fccu_on_tick() {
-    // fccu_bmp280_sensor_read(&fccu->bmp280_sensor);
-    // fccu_adc_read(&fccu->adc);
 
-    if (flags.start_button_pressed_flag == true /*|| (fccu->adc.low_pressure_sensor.voltage >= 0.5f)) */){
-        printf("superekstra\n");
-        k_msleep(1000);
 
-        // fccu_main_valve_on(&fccu->valve_pins);
-        // fccu_fan_on(&fccu->fan);
-        // fccu_fan_pwm_set(&fccu->fan, 50);
+    if (flags.start_button_pressed == true /*|| (fccu->adc.low_pressure_sensor.voltage >= 0.5f)) */){
+        fccu_bmp280_sensor_read();
+        fccu_adc_read();
+
+        if (!flags.main_valve_on) {
+            fccu_main_valve_on();
+        }
+        // if (!flags.purge_valve_on) {
+        //     fccu_purge_valve_on();
+        // }
+        if (!flags.fan_on) {
+            fccu_fan_on();
+            fan_pwm_percent = 20;
+            fccu_fan_pwm_set(fan_pwm_percent);
+        }
 
     }
     int8_t current_driver_pwm = 10;

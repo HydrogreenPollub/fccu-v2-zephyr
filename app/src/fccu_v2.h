@@ -15,8 +15,6 @@
 #define FC_MAX_CURRENT 1.1f
 #define FC_MIN_CURRENT 0.9f
 
-
-
 typedef struct {
     struct adc_dt_spec adc_channel;
     struct adc_sequence sequence;
@@ -73,7 +71,11 @@ typedef struct {
 }fccu_counter_t;
 
 typedef struct {
-    uint8_t start_button_pressed_flag :1;
+    bool start_button_pressed;
+    bool main_valve_on;
+    bool purge_valve_on;
+    bool fan_on;
+
 }fccu_flags_t;
 
 typedef struct {
@@ -81,20 +83,20 @@ typedef struct {
     struct gpio_dt_spec driver_enable_pin;
 }fccu_current_driver_t;
 
-typedef struct {
-    fccu_valve_pin_t valve_pins;
-    fccu_button_t start_button;
-    fccu_fan_t fan;
-    fccu_adc_t adc;
-    fccu_can_t can;
-    fccu_counter_t counter;
-    bmp280_sensor_t bmp280_sensor;
-    ads1015_adc_data_t ads1015_data;
-    ads1015_type_t ads1015_device;
-    fccu_current_driver_t current_driver;
-}fccu_device_t;
+// typedef struct {
+//     fccu_valve_pin_t valve_pins;
+//     fccu_button_t start_button;
+//     fccu_fan_t fan;
+//     fccu_adc_t adc;
+//     fccu_can_t can;
+//     fccu_counter_t counter;
+//     bmp280_sensor_t bmp280_sensor;
+//     ads1015_adc_data_t ads1015_data;
+//     ads1015_type_t ads1015_device;
+//     fccu_current_driver_t current_driver;
+// }fccu_device_t;
 
-extern fccu_flags_t flags;
+extern volatile fccu_flags_t flags;
 extern fccu_valve_pin_t valve_pin;
 extern fccu_button_t button;
 extern bmp280_sensor_t sensor;
