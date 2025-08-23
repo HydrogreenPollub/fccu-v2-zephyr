@@ -30,15 +30,16 @@ int gpio_set(struct gpio_dt_spec *gpio) {
     return gpio_pin_set_dt(gpio, 1);
 }
 
-int gpio_set_interrupt(struct gpio_dt_spec *gpio, gpio_flags_t flags, struct gpio_callback gpio_cb_data, gpio_callback_handler_t handler) {
+int gpio_set_interrupt(struct gpio_dt_spec *gpio, gpio_flags_t flags, struct gpio_callback *gpio_cb_data, gpio_callback_handler_t handler) {
+
+    gpio_init_callback(gpio_cb_data, handler, BIT(gpio->pin));
+    gpio_add_callback(gpio->port, gpio_cb_data);
     int ret = gpio_pin_interrupt_configure_dt(gpio, flags);
     if (ret != 0) {
-        printk("Error %d: failed to configure interrupt on %s pin %d\n",
+        printf("Error %d: failed to configure interrupt on %s pin %d\n",
             ret, gpio->port->name, gpio->pin);
         return 0;
     }
-    gpio_init_callback(&gpio_cb_data, handler, BIT(gpio->pin));
-    gpio_add_callback(gpio->port, &gpio_cb_data);
-
+    printf("interrupt ok\n");
     return 1;
 }
