@@ -22,7 +22,7 @@
 		purge-valve-pin = &purge_valve0;
 		adc-1 = &adc0;
 		can-led = &can_led0;
-		counter0 = &timer0;
+		counter0 = &counter0;
 		driver-enable = &driver_enable0;
 		driver-pwm = &driver_pwm0;
 	};
@@ -177,9 +177,6 @@
 
 &timer0 {
 	status = "okay";
-	counter {
-		status = "okay";
-	};
 };
 
 &timer1 {
@@ -187,11 +184,14 @@
 };
 
 &timer2 {
-	status = "disabled";
+	status = "okay";
 };
 
 &timer3 {
-	status = "disabled";
+	status = "okay";
+	counter0:counter {
+		status = "okay";
+	};
 };
 
 &wdt0 {
