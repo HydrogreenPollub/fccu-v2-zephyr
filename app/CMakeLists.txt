@@ -21,6 +21,7 @@ target_sources(app PRIVATE
         peripherals/adc.c
         peripherals/pwm.c
         peripherals/ads1015.c
+        peripherals/counter.c
 )
 
 target_include_directories(app PRIVATE
