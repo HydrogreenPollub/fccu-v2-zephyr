@@ -10,6 +10,12 @@
 #include <zephyr/drivers/sensor_data_types.h>
 #include <zephyr/logging/log.h>
 #include "ads1015.h"
+// #include "counter.h"
+
+#define FC_MAX_CURRENT 1.1f
+#define FC_MIN_CURRENT 0.9f
+
+
 
 typedef struct {
     struct adc_dt_spec adc_channel;
@@ -59,15 +65,21 @@ typedef struct {
 typedef struct {
     struct gpio_dt_spec button;
     struct gpio_callback button_cb_data;
+    struct k_work_delayable work;
 }fccu_button_t;
 
 typedef struct {
-    struct device *counter_dev;
+    const struct device *counter_dev;
 }fccu_counter_t;
 
 typedef struct {
     uint8_t start_button_pressed_flag :1;
 }fccu_flags_t;
+
+typedef struct {
+    struct pwm_dt_spec driver_pwm;
+    struct gpio_dt_spec driver_enable_pin;
+}fccu_current_driver_t;
 
 typedef struct {
     fccu_valve_pin_t valve_pins;
@@ -79,23 +91,35 @@ typedef struct {
     bmp280_sensor_t bmp280_sensor;
     ads1015_adc_data_t ads1015_data;
     ads1015_type_t ads1015_device;
+    fccu_current_driver_t current_driver;
 }fccu_device_t;
 
 extern fccu_flags_t flags;
+extern fccu_valve_pin_t valve_pin;
+extern fccu_button_t button;
+extern bmp280_sensor_t sensor;
+extern fccu_current_driver_t current_driver;
+extern fccu_can_t can;
+extern fccu_fan_t fan;
+extern fccu_adc_t adc;
 
-void fccu_init(fccu_device_t *fccu);
-void fccu_adc_init(fccu_adc_t *adc);
-void fccu_can_init(fccu_can_t *can);
-void fccu_fan_init(fccu_fan_t *fan);
-void fccu_valves_init(fccu_valve_pin_t *valve_pin);
-void fccu_start_button_init(fccu_button_t *button);
-void fccu_bmp280_sensor_init(bmp280_sensor_t *sensor);
+void fccu_init();
+void fccu_adc_init();
+void fccu_can_init();
+void fccu_fan_init();
+void fccu_valves_init();
+void fccu_start_button_init();
+void fccu_bmp280_sensor_init();
+void fccu_current_driver_init();
+// void fccu_counter_init(fccu_counter_t *counter);
+// void fccu_set_channel_isr(fccu_counter_t *counter, uint8_t channel_id, counter_alarm_callback_t callback, uint32_t microseconds);
 
 
+void button_pressed(const struct device *dev, struct gpio_callback *cb,
+            uint32_t pins);
+void fccu_bmp280_sensor_read();
+void fccu_adc_read();
 
-void fccu_bmp280_sensor_read(bmp280_sensor_t *sensor);
-void fccu_adc_read(fccu_adc_t *adc);
-
-void fccu_on_tick(fccu_device_t* fccu);
+void fccu_on_tick();
 
 #endif //FCCU_V2_H
