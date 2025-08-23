@@ -221,10 +221,8 @@ void fccu_ads1015_read() {
     ads1015_data.fuel_cell_current = adc_map(ads1015_data.fuel_cell_current, 1.508f, 1.432f, 0, 5); // Current sensor: 0-25A
     ads1015_data.high_pressure_sensor = ads1015_read_channel_single_shot(&ads1015_device, 2);
     ads1015_data.low_pressure_sensor = ads1015_read_channel_single_shot(&ads1015_device, 3);
-    LOG_INF("Fuel cell current: %f A\n", ads1015_data.fuel_cell_current);
-    LOG_INF("High_pressure: %f \n", ads1015_data.high_pressure_sensor);
-    LOG_INF("Low_pressure: %f \n", ads1015_data.low_pressure_sensor);
-
+    LOG_INF("Fuel cell current: %.2f A, High_pressure: %.2f, Low_pressure: %.2f\n", ads1015_data.fuel_cell_current, ads1015_data.high_pressure_sensor, \
+        ads1015_data.low_pressure_sensor);
 }
 
 void fccu_on_tick() {
