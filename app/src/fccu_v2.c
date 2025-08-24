@@ -117,7 +117,7 @@ void fccu_current_driver_init() {
     pwm_init(&current_driver.driver_pwm);
 }
 
-void fccu_counter_init() {
+void fccu_counters_init() {
     counter_init(counter.counter0);
     counter_init(counter.counter1);
     counter_init(counter.counter2);
@@ -130,7 +130,7 @@ static void counter_alarm_callback0(const struct device *dev,
                                    void *user_data)
 {
     LOG_INF("Counter0 alarm triggered! chan=%d ticks=%u", chan_id, ticks);
-    fccu_set_channel_isr(counter.counter0, 0, counter_alarm_callback0, 1000000);
+    counter_set_alarm(counter.counter0, 0, counter_alarm_callback0, 1000000);
 }
 
 static void counter_alarm_callback1(const struct device *dev,
@@ -139,7 +139,7 @@ static void counter_alarm_callback1(const struct device *dev,
                                    void *user_data)
 {
     LOG_INF("Counter1 alarm triggered! chan=%d ticks=%u", chan_id, ticks);
-    fccu_set_channel_isr(counter.counter1, 0, counter_alarm_callback1, 2000000);
+    counter_set_alarm(counter.counter1, 0, counter_alarm_callback1, 2000000);
 }
 
 static void counter_alarm_callback2(const struct device *dev,
@@ -148,7 +148,7 @@ static void counter_alarm_callback2(const struct device *dev,
                                    void *user_data)
 {
     LOG_INF("Counter2 alarm triggered! chan=%d ticks=%u", chan_id, ticks);
-    fccu_set_channel_isr(counter.counter2, 0, counter_alarm_callback2, 3000000);
+    counter_set_alarm(counter.counter2, 0, counter_alarm_callback2, 3000000);
 }
 
 static void counter_alarm_callback3(const struct device *dev,
@@ -157,13 +157,16 @@ static void counter_alarm_callback3(const struct device *dev,
                                    void *user_data)
 {
     LOG_INF("Counter3 alarm triggered! chan=%d ticks=%u", chan_id, ticks);
-    fccu_set_channel_isr(counter.counter3, 0, counter_alarm_callback3, 4000000);
+    counter_set_alarm(counter.counter3, 0, counter_alarm_callback3, 4000000);
 }
 
 
 
-void fccu_set_channel_isr(const struct device *counter_dev, uint8_t channel_id, counter_alarm_callback_t callback, uint32_t microseconds) {
-    counter_set_alarm(counter_dev, channel_id, callback, microseconds);
+void fccu_counters_set_interrupts() {
+    counter_set_alarm(counter.counter0, 0, counter_alarm_callback0, 1000000);
+    counter_set_alarm(counter.counter1, 0, counter_alarm_callback1, 2000000);
+    counter_set_alarm(counter.counter2, 0, counter_alarm_callback2, 3000000);
+    counter_set_alarm(counter.counter3, 0, counter_alarm_callback3, 4000000);
 }
 
 static void cooldown_expired(struct k_work *work)
@@ -231,11 +234,9 @@ void fccu_init() {
     // fccu_fan_init();
     // fccu_start_button_init();
     // fccu_bmp280_sensor_init();
-    fccu_counter_init();
-    fccu_set_channel_isr(counter.counter0, 0, counter_alarm_callback0, 1000000);
-    fccu_set_channel_isr(counter.counter1, 0, counter_alarm_callback1, 2000000);
-    fccu_set_channel_isr(counter.counter2, 0, counter_alarm_callback2, 3000000);
-    fccu_set_channel_isr(counter.counter3, 0, counter_alarm_callback3, 4000000);
+    fccu_counters_init();
+    fccu_counters_set_interrupts();
+
 
     // ads1015_init(&ads1015_device);
     // fccu_current_driver_init();

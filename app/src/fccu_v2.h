@@ -118,9 +118,8 @@ void fccu_start_button_init();
 void fccu_bmp280_sensor_init();
 void fccu_current_driver_init();
 void fccu_ads1015_read();
-void fccu_counter_init();
-void fccu_set_channel_isr(const struct device *counter_dev, uint8_t channel_id, counter_alarm_callback_t callback, uint32_t microseconds);
-
+void fccu_counters_init();
+void fccu_counters_set_interrupts();
 
 void button_pressed(const struct device *dev, struct gpio_callback *cb,
             uint32_t pins);
