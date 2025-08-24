@@ -1,16 +1,17 @@
 #ifndef FCCU_V2_H
 #define FCCU_V2_H
 
-#include "can.h"
-#include "gpio.h"
-#include "pwm.h"
-#include "adc.h"
+
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/sensor.h>
 #include <zephyr/drivers/sensor_data_types.h>
 #include <zephyr/logging/log.h>
 #include "ads1015.h"
-// #include "counter.h"
+#include "counter.h"
+#include "can.h"
+#include "gpio.h"
+#include "pwm.h"
+#include "adc.h"
 
 #define FC_MAX_CURRENT 1.1f
 #define FC_MIN_CURRENT 0.9f
@@ -67,7 +68,10 @@ typedef struct {
 }fccu_button_t;
 
 typedef struct {
-    const struct device *counter_dev;
+    const struct device *counter0;
+    const struct device *counter1;
+    const struct device *counter2;
+    const struct device *counter3;
 }fccu_counter_t;
 
 typedef struct {
@@ -113,8 +117,9 @@ void fccu_valves_init();
 void fccu_start_button_init();
 void fccu_bmp280_sensor_init();
 void fccu_current_driver_init();
-// void fccu_counter_init(fccu_counter_t *counter);
-// void fccu_set_channel_isr(fccu_counter_t *counter, uint8_t channel_id, counter_alarm_callback_t callback, uint32_t microseconds);
+void fccu_ads1015_read();
+void fccu_counter_init();
+void fccu_set_channel_isr(const struct device *counter_dev, uint8_t channel_id, counter_alarm_callback_t callback, uint32_t microseconds);
 
 
 void button_pressed(const struct device *dev, struct gpio_callback *cb,

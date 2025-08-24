@@ -38,11 +38,18 @@ fccu_current_driver_t current_driver = {
 };
 
 fccu_button_t button = {
-    GPIO_DT_SPEC_GET(DT_ALIAS(button_start), gpios),
+    .button = GPIO_DT_SPEC_GET(DT_ALIAS(button_start), gpios),
 };
 
 bmp280_sensor_t sensor = {
-    DEVICE_DT_GET_ANY(bosch_bme280),
+    .sensor = DEVICE_DT_GET_ANY(bosch_bme280),
+};
+
+fccu_counter_t counter = {
+    .counter0 = DEVICE_DT_GET(DT_ALIAS(counter0)),
+    .counter1 = DEVICE_DT_GET(DT_ALIAS(counter1)),
+    .counter2 = DEVICE_DT_GET(DT_ALIAS(counter2)),
+    .counter3 = DEVICE_DT_GET(DT_ALIAS(counter3)),
 };
 
 void fccu_valves_init() {
@@ -110,25 +117,54 @@ void fccu_current_driver_init() {
     pwm_init(&current_driver.driver_pwm);
 }
 
-// void fccu_counter_init(fccu_counter_t *counter) {
-//     counter -> counter_dev = DEVICE_DT_GET(DT_ALIAS(counter0));
-//     counter_init(counter->counter_dev);
-// }
-//
-//
-// static void counter_alarm_callback(const struct device *dev,
-//                                    uint8_t chan_id,
-//                                    uint32_t ticks,
-//                                    void *user_data)
-// {
-//     LOG_INF("Counter alarm triggered! chan=%d ticks=%u", chan_id, ticks);
-// }
-//
-//
-//
-// void fccu_set_channel_isr(fccu_counter_t *counter, uint8_t channel_id, counter_alarm_callback_t callback, uint32_t microseconds) {
-//     counter_set_alarm(counter->counter_dev, channel_id, callback, microseconds);
-// }
+void fccu_counter_init() {
+    counter_init(counter.counter0);
+    counter_init(counter.counter1);
+    counter_init(counter.counter2);
+    counter_init(counter.counter3);
+}
+
+static void counter_alarm_callback0(const struct device *dev,
+                                   uint8_t chan_id,
+                                   uint32_t ticks,
+                                   void *user_data)
+{
+    LOG_INF("Counter0 alarm triggered! chan=%d ticks=%u", chan_id, ticks);
+    fccu_set_channel_isr(counter.counter0, 0, counter_alarm_callback0, 1000000);
+}
+
+static void counter_alarm_callback1(const struct device *dev,
+                                   uint8_t chan_id,
+                                   uint32_t ticks,
+                                   void *user_data)
+{
+    LOG_INF("Counter1 alarm triggered! chan=%d ticks=%u", chan_id, ticks);
+    fccu_set_channel_isr(counter.counter1, 0, counter_alarm_callback1, 2000000);
+}
+
+static void counter_alarm_callback2(const struct device *dev,
+                                   uint8_t chan_id,
+                                   uint32_t ticks,
+                                   void *user_data)
+{
+    LOG_INF("Counter2 alarm triggered! chan=%d ticks=%u", chan_id, ticks);
+    fccu_set_channel_isr(counter.counter2, 0, counter_alarm_callback2, 3000000);
+}
+
+static void counter_alarm_callback3(const struct device *dev,
+                                   uint8_t chan_id,
+                                   uint32_t ticks,
+                                   void *user_data)
+{
+    LOG_INF("Counter3 alarm triggered! chan=%d ticks=%u", chan_id, ticks);
+    fccu_set_channel_isr(counter.counter3, 0, counter_alarm_callback3, 4000000);
+}
+
+
+
+void fccu_set_channel_isr(const struct device *counter_dev, uint8_t channel_id, counter_alarm_callback_t callback, uint32_t microseconds) {
+    counter_set_alarm(counter_dev, channel_id, callback, microseconds);
+}
 
 static void cooldown_expired(struct k_work *work)
 {
@@ -185,19 +221,24 @@ void fccu_bmp280_sensor_read() {
     sensor.pressure = sensor_value_to_float(&sensor.pressure_buffer) * 10.0f;
     sensor.humidity = sensor_value_to_float(&sensor.humidity_buffer);
 
-    LOG_INF("Temp: %.2f C, Pressure: %.2f hPa, Humidity: %.2f RH\n", (double)sensor.temperature, (double)sensor.pressure, (double)sensor.humidity);
+    LOG_INF("Temperature: %.2f C, Pressure: %.2f hPa, Humidity: %.2f RH\n", (double)sensor.temperature, (double)sensor.pressure, (double)sensor.humidity);
 }
 
 void fccu_init() {
-    fccu_adc_init();
-    // fccu_can_init();
-    fccu_valves_init();
-    fccu_fan_init();
-    fccu_start_button_init();
-    fccu_bmp280_sensor_init();
-    // fccu_counter_init();
-    ads1015_init(&ads1015_device);
-    fccu_current_driver_init();
+    // fccu_adc_init();
+    // // fccu_can_init();
+    // fccu_valves_init();
+    // fccu_fan_init();
+    // fccu_start_button_init();
+    // fccu_bmp280_sensor_init();
+    fccu_counter_init();
+    fccu_set_channel_isr(counter.counter0, 0, counter_alarm_callback0, 1000000);
+    fccu_set_channel_isr(counter.counter1, 0, counter_alarm_callback1, 2000000);
+    fccu_set_channel_isr(counter.counter2, 0, counter_alarm_callback2, 3000000);
+    fccu_set_channel_isr(counter.counter3, 0, counter_alarm_callback3, 4000000);
+
+    // ads1015_init(&ads1015_device);
+    // fccu_current_driver_init();
     // fccu_current_driver_enable();
 }
 
@@ -228,24 +269,25 @@ void fccu_ads1015_read() {
 void fccu_on_tick() {
 
 
-    if (flags.start_button_pressed == true /*|| (fccu->adc.low_pressure_sensor.voltage >= 0.5f)) */){
-        fccu_bmp280_sensor_read();
-        fccu_adc_read();
-
-        if (!flags.main_valve_on) {
-            fccu_main_valve_on();
-        }
-        // if (!flags.purge_valve_on) {
-        //     fccu_purge_valve_on();
-        // }
-        if (!flags.fan_on) {
-            fccu_fan_on();
-            fan_pwm_percent = 20;
-            fccu_fan_pwm_set(fan_pwm_percent);
-        }
-
-    }
-    int8_t current_driver_pwm = 10;
+    // if (flags.start_button_pressed == true /*|| (fccu->adc.low_pressure_sensor.voltage >= 0.5f)) */){
+    //     fccu_bmp280_sensor_read();
+    //     fccu_adc_read();
+    //     fccu_ads1015_read();
+    //
+    //     if (!flags.main_valve_on) {
+    //         fccu_main_valve_on();
+    //     }
+    //     // if (!flags.purge_valve_on) {
+    //     //     fccu_purge_valve_on();
+    //     // }
+    //     if (!flags.fan_on) {
+    //         fccu_fan_on();
+    //         fan_pwm_percent = 20;
+    //         fccu_fan_pwm_set(fan_pwm_percent);
+    //     }
+    //
+    // }
+    // int8_t current_driver_pwm = 10;
 
 
     // fccu_current_driver_set_pwm(&fccu->current_driver, current_driver_pwm);
@@ -253,7 +295,7 @@ void fccu_on_tick() {
     // fccu->ads1015_data.fuel_cell_current = ads1015_read_channel_single_shot(&fccu->ads1015_device, 0);
     // fccu->ads1015_data.fuel_cell_current = adc_map(fccu->ads1015_data.fuel_cell_current, 1.508f, 1.432, 0, 5); // Current sensor: 0-25A
     // LOG_INF("Current sensor = %.3f A, PWM = %d\r\n",(double)fccu->ads1015_data.fuel_cell_current, current_driver_pwm);
-    // k_msleep(10);
+
 
     // if (fccu->ads1015_data.fuel_cell_current > FC_MAX_CURRENT) {
     //     current_driver_pwm -= 20;
@@ -271,6 +313,6 @@ void fccu_on_tick() {
     //     fccu_current_driver_set_pwm(&fccu->current_driver, current_driver_pwm);
     //
     // }
-
+    k_msleep(100);
 }
 
