@@ -79,13 +79,19 @@ typedef struct {
     bool main_valve_on;
     bool purge_valve_on;
     bool fan_on;
-
+    bool measurements_tick;
 }fccu_flags_t;
 
 typedef struct {
     struct pwm_dt_spec driver_pwm;
     struct gpio_dt_spec driver_enable_pin;
 }fccu_current_driver_t;
+
+typedef enum {
+    RUNNING,
+    STOPPED,
+    IDLE_STATE,
+}fccu_state_t;
 
 // typedef struct {
 //     fccu_valve_pin_t valve_pins;
@@ -101,6 +107,7 @@ typedef struct {
 // }fccu_device_t;
 
 extern volatile fccu_flags_t flags;
+extern volatile fccu_state_t state;
 extern fccu_valve_pin_t valve_pin;
 extern fccu_button_t button;
 extern bmp280_sensor_t sensor;

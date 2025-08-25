@@ -4,8 +4,8 @@ LOG_MODULE_REGISTER(fccu);
 
 uint8_t fan_pwm_percent = 0;
 
-
 volatile fccu_flags_t flags;
+volatile fccu_state_t state = STOPPED;
 
 ads1015_type_t ads1015_device;
 ads1015_adc_data_t ads1015_data;
@@ -124,14 +124,6 @@ void fccu_counters_init() {
     counter_init(counter.counter3);
 }
 
-static void counter_alarm_callback0(const struct device *dev,
-                                   uint8_t chan_id,
-                                   uint32_t ticks,
-                                   void *user_data)
-{
-    LOG_INF("Counter0 alarm triggered! chan=%d ticks=%u", chan_id, ticks);
-    counter_set_alarm(counter.counter0, 0, counter_alarm_callback0, 1000000);
-}
 
 static void counter_alarm_callback1(const struct device *dev,
                                    uint8_t chan_id,
@@ -162,12 +154,7 @@ static void counter_alarm_callback3(const struct device *dev,
 
 
 
-void fccu_counters_set_interrupts() {
-    counter_set_alarm(counter.counter0, 0, counter_alarm_callback0, 1000000);
-    counter_set_alarm(counter.counter1, 0, counter_alarm_callback1, 2000000);
-    counter_set_alarm(counter.counter2, 0, counter_alarm_callback2, 3000000);
-    counter_set_alarm(counter.counter3, 0, counter_alarm_callback3, 4000000);
-}
+
 
 static void cooldown_expired(struct k_work *work)
 {
@@ -187,12 +174,30 @@ void button_pressed(const struct device *dev, struct gpio_callback *cb,
     k_work_reschedule(&cooldown_work, K_MSEC(15));
 }
 
+static void counter_alarm_callback0(const struct device *dev, void *user_data)
+{
+    LOG_INF("oki 99999\n");
+    // if (flags.start_button_pressed == true) {
+    if (state == RUNNING){
+        flags.measurements_tick = true;
+        LOG_INF("Counter0 alarm triggered! \n");
+
+    }
+    // counter_set_alarm(counter.counter0, 0, counter_alarm_callback0, 1000000);
+}
+
+void fccu_counters_set_interrupts() {
+    counter_set_alarm(counter.counter0, 0, counter_alarm_callback0, 1000000);
+    // counter_set_alarm(counter.counter1, 0, counter_alarm_callback1, 2000000);
+    // counter_set_alarm(counter.counter2, 0, counter_alarm_callback2, 3000000);
+    // counter_set_alarm(counter.counter3, 0, counter_alarm_callback3, 4000000);
+}
+
 
 void fccu_start_button_init() {
     gpio_init(&button.button, GPIO_INPUT);
     gpio_set_interrupt(&button.button, GPIO_INT_EDGE_TO_ACTIVE, &button.button_cb_data, button_pressed);
     flags.start_button_pressed = false;
-    printf("dupa_ok\n");
 }
 
 void fccu_bmp280_sensor_init() {
@@ -228,17 +233,23 @@ void fccu_bmp280_sensor_read() {
 }
 
 void fccu_init() {
-    // fccu_adc_init();
+    flags.measurements_tick = false;
+    fccu_adc_init();
+    ads1015_init(&ads1015_device);
     // // fccu_can_init();
     // fccu_valves_init();
     // fccu_fan_init();
-    // fccu_start_button_init();
-    // fccu_bmp280_sensor_init();
     fccu_counters_init();
+    fccu_start_button_init();
     fccu_counters_set_interrupts();
 
+    fccu_bmp280_sensor_init();
 
-    // ads1015_init(&ads1015_device);
+
+
+
+
+
     // fccu_current_driver_init();
     // fccu_current_driver_enable();
 }
@@ -246,16 +257,12 @@ void fccu_init() {
 void fccu_adc_read() {
     LOG_INF("LP:\n");
     adc_read_(&adc.low_pressure_sensor.adc_channel, &adc.low_pressure_sensor.sequence);
-    k_msleep(500);
     LOG_INF("FC_V:\n");
     adc_read_(&adc.fuel_cell_voltage.adc_channel, &adc.fuel_cell_voltage.sequence);
-    k_msleep(500);
     LOG_INF("SC_V:\n");
     adc_read_(&adc.supercap_voltage.adc_channel, &adc.supercap_voltage.sequence);
-    k_msleep(500);
     LOG_INF("Temp:\n");
     adc_read_(&adc.temp_sensor.adc_channel, &adc.temp_sensor.sequence);
-    k_msleep(500);
 }
 
 void fccu_ads1015_read() {
@@ -270,24 +277,27 @@ void fccu_ads1015_read() {
 void fccu_on_tick() {
 
 
-    // if (flags.start_button_pressed == true /*|| (fccu->adc.low_pressure_sensor.voltage >= 0.5f)) */){
-    //     fccu_bmp280_sensor_read();
-    //     fccu_adc_read();
-    //     fccu_ads1015_read();
-    //
-    //     if (!flags.main_valve_on) {
-    //         fccu_main_valve_on();
-    //     }
-    //     // if (!flags.purge_valve_on) {
-    //     //     fccu_purge_valve_on();
-    //     // }
-    //     if (!flags.fan_on) {
-    //         fccu_fan_on();
-    //         fan_pwm_percent = 20;
-    //         fccu_fan_pwm_set(fan_pwm_percent);
-    //     }
-    //
-    // }
+    if (flags.start_button_pressed == true /*|| (fccu->adc.low_pressure_sensor.voltage >= 0.5f)) */){
+        state = RUNNING;
+        if (flags.measurements_tick == true) {
+            fccu_bmp280_sensor_read();
+            fccu_adc_read();
+            fccu_ads1015_read();
+            flags.measurements_tick = false;
+        }
+        // if (!flags.main_valve_on) {
+        //     fccu_main_valve_on();
+        // }
+        // if (!flags.purge_valve_on) {
+        //     fccu_purge_valve_on();
+        // }
+        // if (!flags.fan_on) {
+        //     fccu_fan_on();
+        //     fan_pwm_percent = 20;
+        //     fccu_fan_pwm_set(fan_pwm_percent);
+        // }
+
+    }
     // int8_t current_driver_pwm = 10;
 
 
