@@ -3,6 +3,7 @@
 LOG_MODULE_REGISTER(fccu);
 
 uint8_t fan_pwm_percent = 0;
+static float last_fuel_cell_voltage = 0.0f;
 
 volatile fccu_flags_t flags;
 volatile fccu_state_t state = STOPPED;
@@ -234,11 +235,13 @@ void fccu_bmp280_sensor_read() {
 
 void fccu_init() {
     flags.measurements_tick = false;
+    flags.compare_fuel_cell_voltage = false;
+    flags.purge_valve_on = false;
     fccu_adc_init();
     ads1015_init(&ads1015_device);
     // // fccu_can_init();
-    // fccu_valves_init();
-    // fccu_fan_init();
+    fccu_valves_init();
+    fccu_fan_init();
     fccu_counters_init();
     fccu_start_button_init();
     fccu_counters_set_interrupts();
@@ -297,17 +300,21 @@ void fccu_on_tick() {
             fccu_ads1015_read();
             flags.measurements_tick = false;
         }
-        // if (!flags.main_valve_on) {
-        //     fccu_main_valve_on();
-        // }
-        // if (!flags.purge_valve_on) {
-        //     fccu_purge_valve_on();
-        // }
-        // if (!flags.fan_on) {
-        //     fccu_fan_on();
-        //     fan_pwm_percent = 20;
-        //     fccu_fan_pwm_set(fan_pwm_percent);
-        // }
+        if (!flags.main_valve_on) {
+            fccu_main_valve_on();
+        }
+        if (!flags.fan_on) {
+            fccu_fan_on();
+            fan_pwm_percent = 20;
+            fccu_fan_pwm_set(fan_pwm_percent);
+        }
+        if (flags.compare_fuel_cell_voltage && (!flags.purge_valve_on)) {
+            if (last_fuel_cell_voltage - adc.supercap_voltage.voltage >= 2.0f) {
+                fccu_purge_valve_on();
+            }
+            flags.compare_fuel_cell_voltage = false;
+            last_fuel_cell_voltage = adc.supercap_voltage.voltage;
+        }
 
     }
     // int8_t current_driver_pwm = 10;
