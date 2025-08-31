@@ -53,10 +53,25 @@ fccu_counter_t counter = {
     .counter3 = DEVICE_DT_GET(DT_ALIAS(counter3)),
 };
 
+static struct k_work_delayable pin_off_work;
+
+void fccu_purge_valve_off(struct k_work *work)
+{
+    gpio_reset(&valve_pin.purge_valve_on_pin);
+    flags.purge_valve_on = false;
+}
+
+static void fccu_purge_valve_on() {
+    gpio_set(&valve_pin.purge_valve_on_pin);
+    flags.purge_valve_on = true;
+    LOG_INF("Purge Valve on\n");
+    k_work_reschedule(&pin_off_work, K_MSEC(300));
+}
+
 void fccu_valves_init() {
     gpio_init(&valve_pin.main_valve_on_pin, GPIO_OUTPUT_INACTIVE);
     gpio_init(&valve_pin.purge_valve_on_pin, GPIO_OUTPUT_INACTIVE);
-
+    k_work_init_delayable(&pin_off_work, fccu_purge_valve_off);
     flags.main_valve_on = false;
     flags.purge_valve_on = false;
 }
@@ -67,11 +82,7 @@ static void fccu_main_valve_on() {
     LOG_INF("Main Valve on\n");
 }
 
-static void fccu_purge_valve_on() {
-    gpio_set(&valve_pin.purge_valve_on_pin);
-    flags.purge_valve_on = true;
-    LOG_INF("Purge Valve on\n");
-}
+
 
 static void fccu_fan_on() {
     gpio_set(&fan.fan_on_pin);
