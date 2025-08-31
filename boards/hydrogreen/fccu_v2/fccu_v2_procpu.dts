@@ -15,6 +15,7 @@
 		watchdog0 = &wdt0;
 		uart-0 = &uart0;
 		button-start = &button_start0;
+		button-start-external = &button_start1;
 		can = &twai;
 		fan-pin = &fan0;
 		fan-pwm = &fan_pwm0;
@@ -23,6 +24,9 @@
 		adc-1 = &adc0;
 		can-led = &can_led0;
 		counter0 = &counter0;
+		counter1 = &counter1;
+		counter2 = &counter2;
+		counter3 = &counter3;
 		driver-enable = &driver_enable0;
 		driver-pwm = &driver_pwm0;
 	};
@@ -41,7 +45,12 @@
 		compatible = "gpio-keys";
 		button_start0: button_start_0 {
 			gpios = <&gpio0 11 (GPIO_ACTIVE_LOW)>;
-			label = "start button";
+			label = "start button internal";
+			zephyr,code = <INPUT_KEY_0>;
+		};
+		button_start1: button_start_1 {
+			gpios = <&gpio0 1 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+			label = "start button external";
 			zephyr,code = <INPUT_KEY_0>;
 		};
 	};
@@ -177,19 +186,28 @@
 
 &timer0 {
 	status = "okay";
+	counter0:counter {
+		status = "okay";
+	};
 };
 
 &timer1 {
 	status = "okay";
+	counter1:counter {
+		status = "okay";
+	};
 };
 
 &timer2 {
 	status = "okay";
+	counter2:counter {
+		status = "okay";
+	};
 };
 
 &timer3 {
 	status = "okay";
-	counter0:counter {
+	counter3:counter {
 		status = "okay";
 	};
 };
@@ -234,14 +252,14 @@
 	};
 	channel@8 {
 		reg = <8>;
-		zephyr,gain = "ADC_GAIN_1";
+		zephyr,gain = "ADC_GAIN_1_4";
 		zephyr,reference = "ADC_REF_INTERNAL";
 		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
 		zephyr,resolution = <12>;
 	};
 	channel@9 {
 		reg = <9>;
-		zephyr,gain = "ADC_GAIN_1";
+		zephyr,gain = "ADC_GAIN_1_4";
 		zephyr,reference = "ADC_REF_INTERNAL";
 		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
 		zephyr,resolution = <12>;
