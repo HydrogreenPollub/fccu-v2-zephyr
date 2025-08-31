@@ -255,14 +255,26 @@ void fccu_init() {
 }
 
 void fccu_adc_read() {
-    LOG_INF("LP:\n");
-    adc_read_(&adc.low_pressure_sensor.adc_channel, &adc.low_pressure_sensor.sequence);
-    LOG_INF("FC_V:\n");
-    adc_read_(&adc.fuel_cell_voltage.adc_channel, &adc.fuel_cell_voltage.sequence);
-    LOG_INF("SC_V:\n");
-    adc_read_(&adc.supercap_voltage.adc_channel, &adc.supercap_voltage.sequence);
-    LOG_INF("Temp:\n");
-    adc_read_(&adc.temp_sensor.adc_channel, &adc.temp_sensor.sequence);
+    adc_read_(&adc.low_pressure_sensor.adc_channel, &adc.low_pressure_sensor.raw_value);
+    adc_read_(&adc.fuel_cell_voltage.adc_channel, &adc.fuel_cell_voltage.raw_value);
+    adc_read_(&adc.supercap_voltage.adc_channel, &adc.supercap_voltage.raw_value);
+    adc.supercap_voltage.voltage = adc_map((float)adc.supercap_voltage.raw_value, 0.0f, 2862.0f, 0.5f, 51.0f);
+    adc_read_(&adc.temp_sensor.adc_channel, &adc.temp_sensor.raw_value);
+    int32_t val = (int32_t)adc.temp_sensor.raw_value;
+    adc_raw_to_millivolts_dt(&adc.temp_sensor.adc_channel, &val);
+    adc.temp_sensor.voltage = (float)val / 1000.0f;
+    float Vcc = 3.3f;
+    float R = 10000.0f;
+    float R_ntc = (R *  (Vcc - adc.temp_sensor.voltage)) / adc.temp_sensor.voltage;
+
+    float T0 = 298.15f; // 25°C w kelwinach
+    float R0 = 1000.0f; // 1kΩ przy 25°C
+    float B = 3450.0f;
+
+    float tempK = 1.0f / ((1.0f / T0) + (1.0f / B) * logf(R_ntc / R0));
+    float tempC = tempK - 273.15f;
+    LOG_INF("Low pressure sensor: %d, Fuel cell voltage: %d, Supercap voltage: %.3f, Temperature: %.3f\n", adc.low_pressure_sensor.raw_value, adc.fuel_cell_voltage.raw_value, \
+      adc.supercap_voltage.voltage, tempC);
 }
 
 void fccu_ads1015_read() {
