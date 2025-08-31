@@ -40,6 +40,7 @@ fccu_current_driver_t current_driver = {
 
 fccu_button_t button = {
     .button = GPIO_DT_SPEC_GET(DT_ALIAS(button_start), gpios),
+    .button_external = GPIO_DT_SPEC_GET(DT_ALIAS(button_start_external), gpios),
 };
 
 bmp280_sensor_t sensor = {
@@ -137,13 +138,12 @@ void fccu_counters_init() {
 }
 
 
-static void counter_alarm_callback1(const struct device *dev,
-                                   uint8_t chan_id,
-                                   uint32_t ticks,
-                                   void *user_data)
+static void counter_alarm_callback1(const struct device *dev, void *user_data)
 {
     LOG_INF("Counter1 alarm triggered! chan=%d ticks=%u", chan_id, ticks);
     counter_set_alarm(counter.counter1, 0, counter_alarm_callback1, 2000000);
+    flags.compare_fuel_cell_voltage = true;
+    LOG_INF("Counter1 alarm triggered! \r\n");
 }
 
 static void counter_alarm_callback2(const struct device *dev,
@@ -164,10 +164,6 @@ static void counter_alarm_callback3(const struct device *dev,
     counter_set_alarm(counter.counter3, 0, counter_alarm_callback3, 4000000);
 }
 
-
-
-
-
 static void cooldown_expired(struct k_work *work)
 {
     ARG_UNUSED(work);
@@ -183,7 +179,25 @@ static K_WORK_DELAYABLE_DEFINE(cooldown_work, cooldown_expired);
 void button_pressed(const struct device *dev, struct gpio_callback *cb,
             uint32_t pins)
 {
-    k_work_reschedule(&cooldown_work, K_MSEC(15));
+    k_work_reschedule(&cooldown_work, K_MSEC(1000));
+}
+
+static void cooldown_expired1(struct k_work *work)
+{
+    ARG_UNUSED(work);
+
+    if (gpio_pin_get_dt(&button.button_external) == 1) {
+        flags.start_button_pressed = true;
+        printf("Button pressed at %" PRIu32 "\n", k_cycle_get_32());
+    }
+
+}
+static K_WORK_DELAYABLE_DEFINE(cooldown_work1, cooldown_expired1);
+
+void button_pressed1(const struct device *dev, struct gpio_callback *cb,
+            uint32_t pins)
+{
+    k_work_reschedule(&cooldown_work1, K_MSEC(1000));
 }
 
 static void counter_alarm_callback0(const struct device *dev, void *user_data)
@@ -200,7 +214,7 @@ static void counter_alarm_callback0(const struct device *dev, void *user_data)
 
 void fccu_counters_set_interrupts() {
     counter_set_alarm(counter.counter0, 0, counter_alarm_callback0, 1000000);
-    // counter_set_alarm(counter.counter1, 0, counter_alarm_callback1, 2000000);
+    counter_set_alarm(counter.counter1, 0, counter_alarm_callback1, 30000000);
     // counter_set_alarm(counter.counter2, 0, counter_alarm_callback2, 3000000);
     // counter_set_alarm(counter.counter3, 0, counter_alarm_callback3, 4000000);
 }
@@ -209,6 +223,9 @@ void fccu_counters_set_interrupts() {
 void fccu_start_button_init() {
     gpio_init(&button.button, GPIO_INPUT);
     gpio_set_interrupt(&button.button, GPIO_INT_EDGE_TO_ACTIVE, &button.button_cb_data, button_pressed);
+
+    gpio_init(&button.button_external, GPIO_INPUT);
+    gpio_set_interrupt(&button.button_external, GPIO_INT_EDGE_TO_ACTIVE, &button.button_ext_cb_data, button_pressed1);
     flags.start_button_pressed = false;
 }
 
