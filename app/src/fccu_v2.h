@@ -12,13 +12,16 @@
 #include "gpio.h"
 #include "pwm.h"
 #include "adc.h"
+#include <math.h>
 
 #define FC_MAX_CURRENT 1.1f
 #define FC_MIN_CURRENT 0.9f
+#define PURGE_DURATION_MS             300
+#define FC_V_PURGE_TRIGGER_DIFFERENCE 2.0f
+#define FC_V_MAX_TEMPERATURE 65.0f
 
 typedef struct {
     struct adc_dt_spec adc_channel;
-    struct adc_sequence sequence;
     int16_t raw_value;
     float voltage;
 }fccu_adc_device_t;
@@ -63,13 +66,15 @@ typedef struct {
 
 typedef struct {
     struct gpio_dt_spec button;
+    struct gpio_dt_spec button_external;
     struct gpio_callback button_cb_data;
+    struct gpio_callback button_ext_cb_data;
     struct k_work_delayable work;
 }fccu_button_t;
 
 typedef struct {
-    const struct device *counter0;
-    const struct device *counter1;
+    const struct device *counter_measurements;
+    const struct device *counter_fuel_cell_voltage_check;
     const struct device *counter2;
     const struct device *counter3;
 }fccu_counter_t;
@@ -80,6 +85,7 @@ typedef struct {
     bool purge_valve_on;
     bool fan_on;
     bool measurements_tick;
+    bool compare_fuel_cell_voltage;
 }fccu_flags_t;
 
 typedef struct {

@@ -140,10 +140,10 @@ void fccu_counters_init() {
 
 static void counter_alarm_callback1(const struct device *dev, void *user_data)
 {
-    LOG_INF("Counter1 alarm triggered! chan=%d ticks=%u", chan_id, ticks);
-    counter_set_alarm(counter.counter1, 0, counter_alarm_callback1, 2000000);
-    flags.compare_fuel_cell_voltage = true;
-    LOG_INF("Counter1 alarm triggered! \r\n");
+    if (state == RUNNING) {
+        flags.compare_fuel_cell_voltage = true;
+        LOG_INF("Counter1 alarm triggered! \r\n");
+    }
 }
 
 static void counter_alarm_callback2(const struct device *dev,
